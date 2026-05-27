@@ -1,0 +1,18 @@
+club_name,league,stadium_name,surface_type,notes,last_verified
+Arsenal,pl,Emirates Stadium,0,,2024-01
+Chelsea,pl,Stamford Bridge,0,,2024-01
+Manchester City,pl,Etihad Stadium,0,,2024-01
+Manchester United,pl,Old Trafford,0,,2024-01
+Liverpool,pl,Anfield,0,,2024-01
+Tottenham Hotspur,pl,Tottenham Hotspur Stadium,1,Synthetic grass pitch,2024-01
+Real Madrid,la_liga,Estadio Santiago Bernabéu,1,Synthetic grass installed 2022,2024-01
+Barcelona,la_liga,Estadi Olímpic Lluís Companys,0,Temporary stadium during Camp Nou renovation,2024-01
+Atletico Madrid,la_liga,Estadio Civitas Metropolitano,0,,2024-01
+Bayern Munich,bundesliga,Allianz Arena,0,,2024-01
+Borussia Dortmund,bundesliga,Signal Iduna Park,0,,2024-01
+Juventus,serie_a,Juventus Stadium,0,,2024-01
+Inter Milan,serie_a,San Siro,0,,2024-01
+AC Milan,serie_a,San Siro,0,,2024-01
+Paris Saint-Germain,ligue_1,Parc des Princes,0,,2024-01
+Galatasaray,super_lig,Rams Park,1,Artificial turf,2024-01
+Fenerbahçe,super_lig,Şükrü Saracoğlu,0,,2024-01
