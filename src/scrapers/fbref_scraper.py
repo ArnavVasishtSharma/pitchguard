@@ -70,13 +70,15 @@ def get_player_match_log(player_fbref_id: str, season: str) -> pd.DataFrame:
         if not date_cell:
             continue
 
-        rows.append({
-            "date": date_cell.text.strip(),
-            "venue": venue_cell.text.strip() if venue_cell else None,
-            "opponent": opponent_cell.text.strip() if opponent_cell else None,
-            "minutes_played": minutes_cell.text.strip() if minutes_cell else None,
-            "result": result_cell.text.strip() if result_cell else None,
-        })
+        rows.append(
+            {
+                "date": date_cell.text.strip(),
+                "venue": venue_cell.text.strip() if venue_cell else None,
+                "opponent": opponent_cell.text.strip() if opponent_cell else None,
+                "minutes_played": minutes_cell.text.strip() if minutes_cell else None,
+                "result": result_cell.text.strip() if result_cell else None,
+            }
+        )
 
     df = pd.DataFrame(rows)
     if not df.empty:
@@ -103,9 +105,7 @@ def compute_congestion(match_log: pd.DataFrame, reference_date: pd.Timestamp) ->
         "minutes_last_30d": last_30_days["minutes_played"].sum(),
         "games_last_14d": len(last_14_days),
         "season_minutes": past["minutes_played"].sum(),
-        "avg_minutes_per_game": (
-            past["minutes_played"].mean() if len(past) > 0 else 0
-        ),
+        "avg_minutes_per_game": (past["minutes_played"].mean() if len(past) > 0 else 0),
         "days_since_last_game": (
             (reference_date - past.iloc[0]["date"]).days if len(past) > 0 else None
         ),
@@ -118,7 +118,9 @@ def main(league: str, season: str, output_dir: str) -> None:
 
     league_id = FBREF_LEAGUES.get(league)
     if not league_id:
-        raise ValueError(f"Unknown league '{league}'. Valid: {list(FBREF_LEAGUES.keys())}")
+        raise ValueError(
+            f"Unknown league '{league}'. Valid: {list(FBREF_LEAGUES.keys())}"
+        )
 
     logger.info(f"FBref scraper ready for league={league}, season={season}")
     logger.info("Provide player FBref IDs (from squad data) to fetch individual logs.")

@@ -62,8 +62,8 @@ class InjuryRow:
     injury_date: str
     return_date: str
     games_missed: str
-    opponent_club: str        # Raw text from Transfermarkt
-    opponent_mapped: str      # Mapped to our 100-club list or "Unspecified"
+    opponent_club: str  # Raw text from Transfermarkt
+    opponent_mapped: str  # Mapped to our 100-club list or "Unspecified"
 
 
 # ---------------------------------------------------------------------------
@@ -72,111 +72,111 @@ class InjuryRow:
 # ---------------------------------------------------------------------------
 CLUB_LOOKUP: dict[str, tuple[str, str]] = {
     # Premier League
-    "Arsenal":                      ("fc-arsenal",               "11"),
-    "Aston Villa":                  ("aston-villa",              "405"),
-    "Brentford":                    ("brentford-fc",             "1148"),
-    "Brighton & Hove Albion":       ("brighton-hove-albion",     "1237"),
-    "Chelsea":                      ("fc-chelsea",               "631"),
-    "Crystal Palace":               ("crystal-palace",           "873"),
-    "Everton":                      ("fc-everton",               "29"),
-    "Fulham":                       ("fc-fulham",                "931"),
-    "Ipswich Town":                 ("ipswich-town",             "677"),
-    "Leicester City":               ("leicester-city",           "1003"),
-    "Liverpool":                    ("fc-liverpool",             "31"),
-    "Manchester City":              ("manchester-city",          "281"),
-    "Manchester United":            ("manchester-united",        "985"),
-    "Newcastle United":             ("newcastle-united",         "762"),
-    "Nottingham Forest":            ("nottingham-forest",        "703"),
-    "Southampton":                  ("fc-southampton",           "180"),
-    "Tottenham Hotspur":            ("tottenham-hotspur",        "148"),
-    "West Ham United":              ("west-ham-united",          "379"),
-    "Wolverhampton Wanderers":      ("wolverhampton-wanderers",  "543"),
-    "Bournemouth":                  ("afc-bournemouth",          "989"),
+    "Arsenal": ("fc-arsenal", "11"),
+    "Aston Villa": ("aston-villa", "405"),
+    "Brentford": ("brentford-fc", "1148"),
+    "Brighton & Hove Albion": ("brighton-hove-albion", "1237"),
+    "Chelsea": ("fc-chelsea", "631"),
+    "Crystal Palace": ("crystal-palace", "873"),
+    "Everton": ("fc-everton", "29"),
+    "Fulham": ("fc-fulham", "931"),
+    "Ipswich Town": ("ipswich-town", "677"),
+    "Leicester City": ("leicester-city", "1003"),
+    "Liverpool": ("fc-liverpool", "31"),
+    "Manchester City": ("manchester-city", "281"),
+    "Manchester United": ("manchester-united", "985"),
+    "Newcastle United": ("newcastle-united", "762"),
+    "Nottingham Forest": ("nottingham-forest", "703"),
+    "Southampton": ("fc-southampton", "180"),
+    "Tottenham Hotspur": ("tottenham-hotspur", "148"),
+    "West Ham United": ("west-ham-united", "379"),
+    "Wolverhampton Wanderers": ("wolverhampton-wanderers", "543"),
+    "Bournemouth": ("afc-bournemouth", "989"),
     # La Liga
-    "Real Madrid":                  ("real-madrid",              "418"),
-    "FC Barcelona":                 ("fc-barcelona",             "131"),
-    "Atletico Madrid":              ("atletico-de-madrid",       "13"),
-    "Sevilla FC":                   ("fc-sevilla",               "368"),
-    "Real Betis":                   ("real-betis-balompie",      "150"),
-    "Real Sociedad":                ("real-sociedad",            "681"),
-    "Athletic Bilbao":              ("athletic-club",            "621"),
-    "Villarreal CF":                ("villarreal-cf",            "383"),
-    "Valencia CF":                  ("fc-valencia",              "1049"),
-    "Celta Vigo":                   ("rc-celta-de-vigo",         "940"),
-    "Rayo Vallecano":               ("rayo-vallecano",           "367"),
-    "Osasuna":                      ("ca-osasuna",               "331"),
-    "Getafe CF":                    ("getafe-cf",                "3709"),
-    "Girona FC":                    ("girona-fc",                "12321"),
-    "UD Las Palmas":                ("ud-las-palmas",            "472"),
-    "Deportivo Alaves":             ("deportivo-alaves",         "1108"),
-    "RCD Mallorca":                 ("rcd-mallorca",             "237"),
-    "CD Leganes":                   ("cd-leganes",               "5905"),
-    "Real Valladolid":              ("real-valladolid-cf",       "366"),
-    "Espanyol":                     ("rcd-espanyol-barcelona",   "714"),
+    "Real Madrid": ("real-madrid", "418"),
+    "FC Barcelona": ("fc-barcelona", "131"),
+    "Atletico Madrid": ("atletico-de-madrid", "13"),
+    "Sevilla FC": ("fc-sevilla", "368"),
+    "Real Betis": ("real-betis-balompie", "150"),
+    "Real Sociedad": ("real-sociedad", "681"),
+    "Athletic Bilbao": ("athletic-club", "621"),
+    "Villarreal CF": ("villarreal-cf", "383"),
+    "Valencia CF": ("fc-valencia", "1049"),
+    "Celta Vigo": ("rc-celta-de-vigo", "940"),
+    "Rayo Vallecano": ("rayo-vallecano", "367"),
+    "Osasuna": ("ca-osasuna", "331"),
+    "Getafe CF": ("getafe-cf", "3709"),
+    "Girona FC": ("girona-fc", "12321"),
+    "UD Las Palmas": ("ud-las-palmas", "472"),
+    "Deportivo Alaves": ("deportivo-alaves", "1108"),
+    "RCD Mallorca": ("rcd-mallorca", "237"),
+    "CD Leganes": ("cd-leganes", "5905"),
+    "Real Valladolid": ("real-valladolid-cf", "366"),
+    "Espanyol": ("rcd-espanyol-barcelona", "714"),
     # Bundesliga
-    "Bayern Munich":                ("fc-bayern-munchen",        "27"),
-    "Borussia Dortmund":            ("borussia-dortmund",        "16"),
-    "Bayer Leverkusen":             ("bayer-04-leverkusen",      "15"),
-    "RB Leipzig":                   ("rasenballsport-leipzig",   "23826"),
-    "Eintracht Frankfurt":          ("eintracht-frankfurt",      "24"),
-    "VfB Stuttgart":                ("vfb-stuttgart",            "79"),
-    "Werder Bremen":                ("sv-werder-bremen",         "86"),
-    "SC Freiburg":                  ("sport-club-freiburg",      "60"),
-    "TSG Hoffenheim":               ("tsg-1899-hoffenheim",      "533"),
-    "Borussia Monchengladbach":     ("borussia-monchengladbach", "23"),
-    "FC Augsburg":                  ("fc-augsburg",              "167"),
-    "1. FC Union Berlin":           ("1-fc-union-berlin",        "89"),
-    "VfL Bochum":                   ("vfl-bochum",               "80"),
-    "SV Darmstadt 98":              ("sv-darmstadt-98",          "105"),
-    "1. FC Heidenheim":             ("1-fc-heidenheim-1846",     "2036"),
-    "Holstein Kiel":                ("holstein-kiel",            "4372"),
-    "FC St. Pauli":                 ("fc-st-pauli",              "35"),
-    "VfL Wolfsburg":                ("vfl-wolfsburg",            "82"),
+    "Bayern Munich": ("fc-bayern-munchen", "27"),
+    "Borussia Dortmund": ("borussia-dortmund", "16"),
+    "Bayer Leverkusen": ("bayer-04-leverkusen", "15"),
+    "RB Leipzig": ("rasenballsport-leipzig", "23826"),
+    "Eintracht Frankfurt": ("eintracht-frankfurt", "24"),
+    "VfB Stuttgart": ("vfb-stuttgart", "79"),
+    "Werder Bremen": ("sv-werder-bremen", "86"),
+    "SC Freiburg": ("sport-club-freiburg", "60"),
+    "TSG Hoffenheim": ("tsg-1899-hoffenheim", "533"),
+    "Borussia Monchengladbach": ("borussia-monchengladbach", "23"),
+    "FC Augsburg": ("fc-augsburg", "167"),
+    "1. FC Union Berlin": ("1-fc-union-berlin", "89"),
+    "VfL Bochum": ("vfl-bochum", "80"),
+    "SV Darmstadt 98": ("sv-darmstadt-98", "105"),
+    "1. FC Heidenheim": ("1-fc-heidenheim-1846", "2036"),
+    "Holstein Kiel": ("holstein-kiel", "4372"),
+    "FC St. Pauli": ("fc-st-pauli", "35"),
+    "VfL Wolfsburg": ("vfl-wolfsburg", "82"),
     # Serie A
-    "Inter Milan":                  ("inter-mailand",            "46"),
-    "AC Milan":                     ("ac-mailand",               "5"),
-    "Juventus":                     ("juventus-turin",           "506"),
-    "AS Roma":                      ("as-rom",                   "12"),
-    "SSC Napoli":                   ("ssc-neapel",               "6195"),
-    "Lazio":                        ("lazio-rom",                "398"),
-    "Atalanta":                     ("atalanta-bergamo",         "800"),
-    "Fiorentina":                   ("acf-fiorentina",           "430"),
-    "Torino":                       ("fc-turin",                 "416"),
-    "Bologna":                      ("fc-bologna",               "1025"),
-    "Genoa":                        ("genua-cfc",                "252"),
-    "Cagliari":                     ("cagliari-calcio",          "1390"),
-    "Hellas Verona":                ("hellas-verona",            "276"),
-    "Monza":                        ("ac-monza",                 "9462"),
-    "Udinese":                      ("udinese-calcio",           "410"),
-    "Como":                         ("como-1907",                "2324"),
-    "Venezia":                      ("fc-venedig",               "685"),
-    "Parma":                        ("parma-calcio-1913",        "130"),
-    "Empoli":                       ("fc-empoli",                "749"),
-    "Lecce":                        ("us-lecce",                 "4884"),
+    "Inter Milan": ("inter-mailand", "46"),
+    "AC Milan": ("ac-mailand", "5"),
+    "Juventus": ("juventus-turin", "506"),
+    "AS Roma": ("as-rom", "12"),
+    "SSC Napoli": ("ssc-neapel", "6195"),
+    "Lazio": ("lazio-rom", "398"),
+    "Atalanta": ("atalanta-bergamo", "800"),
+    "Fiorentina": ("acf-fiorentina", "430"),
+    "Torino": ("fc-turin", "416"),
+    "Bologna": ("fc-bologna", "1025"),
+    "Genoa": ("genua-cfc", "252"),
+    "Cagliari": ("cagliari-calcio", "1390"),
+    "Hellas Verona": ("hellas-verona", "276"),
+    "Monza": ("ac-monza", "9462"),
+    "Udinese": ("udinese-calcio", "410"),
+    "Como": ("como-1907", "2324"),
+    "Venezia": ("fc-venedig", "685"),
+    "Parma": ("parma-calcio-1913", "130"),
+    "Empoli": ("fc-empoli", "749"),
+    "Lecce": ("us-lecce", "4884"),
     # Ligue 1
-    "Paris Saint-Germain":          ("paris-saint-germain",      "583"),
-    "Olympique de Marseille":       ("olympique-marseille",      "244"),
-    "Olympique Lyonnais":           ("olympique-lyon",           "1041"),
-    "AS Monaco":                    ("as-monaco",                "162"),
-    "Lille OSC":                    ("losc-lille",               "1082"),
-    "OGC Nice":                     ("ogc-nizza",                "417"),
-    "Stade Rennais":                ("stade-rennais",            "273"),
-    "RC Lens":                      ("rc-lens",                  "826"),
-    "Montpellier HSC":              ("montpellier-hsc",          "969"),
-    "Strasbourg":                   ("rc-strasbourg-alsace",     "667"),
-    "FC Nantes":                    ("fc-nantes",                "995"),
-    "Toulouse FC":                  ("toulouse-fc",              "415"),
-    "Stade Brestois":               ("stade-brestois-29",        "3911"),
-    "Angers SCO":                   ("angers-sco",               "1023"),
-    "Le Havre AC":                  ("le-havre-ac",              "738"),
-    "Auxerre":                      ("aj-auxerre",               "69"),
-    "Saint-Etienne":                ("as-saint-etienne",         "618"),
-    "Girondins Bordeaux":           ("fc-girondins-bordeaux",    "374"),
+    "Paris Saint-Germain": ("paris-saint-germain", "583"),
+    "Olympique de Marseille": ("olympique-marseille", "244"),
+    "Olympique Lyonnais": ("olympique-lyon", "1041"),
+    "AS Monaco": ("as-monaco", "162"),
+    "Lille OSC": ("losc-lille", "1082"),
+    "OGC Nice": ("ogc-nizza", "417"),
+    "Stade Rennais": ("stade-rennais", "273"),
+    "RC Lens": ("rc-lens", "826"),
+    "Montpellier HSC": ("montpellier-hsc", "969"),
+    "Strasbourg": ("rc-strasbourg-alsace", "667"),
+    "FC Nantes": ("fc-nantes", "995"),
+    "Toulouse FC": ("toulouse-fc", "415"),
+    "Stade Brestois": ("stade-brestois-29", "3911"),
+    "Angers SCO": ("angers-sco", "1023"),
+    "Le Havre AC": ("le-havre-ac", "738"),
+    "Auxerre": ("aj-auxerre", "69"),
+    "Saint-Etienne": ("as-saint-etienne", "618"),
+    "Girondins Bordeaux": ("fc-girondins-bordeaux", "374"),
     # Super Lig
-    "Galatasaray":                  ("galatasaray-sk",           "141"),
-    "Fenerbahce":                   ("fenerbahce-sk",            "36"),
-    "Besiktas":                     ("besiktas-jk",              "114"),
-    "Trabzonspor":                  ("trabzonspor",              "449"),
+    "Galatasaray": ("galatasaray-sk", "141"),
+    "Fenerbahce": ("fenerbahce-sk", "36"),
+    "Besiktas": ("besiktas-jk", "114"),
+    "Trabzonspor": ("trabzonspor", "449"),
 }
 
 # Build a lowercase set for fast opponent matching
@@ -185,140 +185,140 @@ CLUB_NAMES_LOWER: dict[str, str] = {k.lower(): k for k in CLUB_LOOKUP}
 
 # Common alternate names TM uses (German spellings, abbreviations etc.)
 CLUB_ALIASES: dict[str, str] = {
-    "fc barcelona":             "FC Barcelona",
-    "barcelona":                "FC Barcelona",
-    "real madrid cf":           "Real Madrid",
-    "atletico madrid":          "Atletico Madrid",
-    "atlético de madrid":       "Atletico Madrid",
-    "inter mailand":            "Inter Milan",
-    "inter":                    "Inter Milan",
-    "ac mailand":               "AC Milan",
-    "milan":                    "AC Milan",
-    "juventus turin":           "Juventus",
-    "juventus":                 "Juventus",
-    "as rom":                   "AS Roma",
-    "ssc neapel":               "SSC Napoli",
-    "napoli":                   "SSC Napoli",
-    "fc bayern münchen":        "Bayern Munich",
-    "fc bayern munchen":        "Bayern Munich",
-    "bayern":                   "Bayern Munich",
-    "borussia dortmund":        "Borussia Dortmund",
-    "bvb":                      "Borussia Dortmund",
-    "paris saint-germain":      "Paris Saint-Germain",
-    "psg":                      "Paris Saint-Germain",
-    "olympique marseille":      "Olympique de Marseille",
-    "marseille":                "Olympique de Marseille",
-    "olympique lyonnais":       "Olympique Lyonnais",
-    "lyon":                     "Olympique Lyonnais",
-    "tottenham":                "Tottenham Hotspur",
-    "spurs":                    "Tottenham Hotspur",
-    "man city":                 "Manchester City",
-    "man utd":                  "Manchester United",
-    "manchester utd":           "Manchester United",
-    "newcastle":                "Newcastle United",
-    "wolves":                   "Wolverhampton Wanderers",
-    "west ham":                 "West Ham United",
-    "fenerbahçe":               "Fenerbahce",
-    "beşiktaş":                 "Besiktas",
-    "galatasaray sk":           "Galatasaray",
-    "genua cfc":                "Genoa",
-    "fc venedig":               "Venezia",
-    "fc turin":                 "Torino",
-    "lazio rom":                "Lazio",
-    "as saint-etienne":         "Saint-Etienne",
-    "girondins bordeaux":       "Girondins Bordeaux",
-    "rc strasbourg alsace":     "Strasbourg",
-    "losc lille":               "Lille OSC",
-    "lille":                    "Lille OSC",
-    "ogc nizza":                "OGC Nice",
-    "nice":                     "OGC Nice",
-    "stade rennais":            "Stade Rennais",
-    "rennes":                   "Stade Rennais",
-    "stade brestois 29":        "Stade Brestois",
-    "brest":                    "Stade Brestois",
-    "aj auxerre":               "Auxerre",
-    "tsg 1899 hoffenheim":      "TSG Hoffenheim",
-    "hoffenheim":               "TSG Hoffenheim",
-    "sport-club freiburg":      "SC Freiburg",
-    "freiburg":                 "SC Freiburg",
-    "sv werder bremen":         "Werder Bremen",
-    "werder":                   "Werder Bremen",
-    "rasenballsport leipzig":   "RB Leipzig",
-    "rb leipzig":               "RB Leipzig",
-    "eintracht frankfurt":      "Eintracht Frankfurt",
-    "frankfurt":                "Eintracht Frankfurt",
-    "vfb stuttgart":            "VfB Stuttgart",
-    "stuttgart":                "VfB Stuttgart",
+    "fc barcelona": "FC Barcelona",
+    "barcelona": "FC Barcelona",
+    "real madrid cf": "Real Madrid",
+    "atletico madrid": "Atletico Madrid",
+    "atlético de madrid": "Atletico Madrid",
+    "inter mailand": "Inter Milan",
+    "inter": "Inter Milan",
+    "ac mailand": "AC Milan",
+    "milan": "AC Milan",
+    "juventus turin": "Juventus",
+    "juventus": "Juventus",
+    "as rom": "AS Roma",
+    "ssc neapel": "SSC Napoli",
+    "napoli": "SSC Napoli",
+    "fc bayern münchen": "Bayern Munich",
+    "fc bayern munchen": "Bayern Munich",
+    "bayern": "Bayern Munich",
+    "borussia dortmund": "Borussia Dortmund",
+    "bvb": "Borussia Dortmund",
+    "paris saint-germain": "Paris Saint-Germain",
+    "psg": "Paris Saint-Germain",
+    "olympique marseille": "Olympique de Marseille",
+    "marseille": "Olympique de Marseille",
+    "olympique lyonnais": "Olympique Lyonnais",
+    "lyon": "Olympique Lyonnais",
+    "tottenham": "Tottenham Hotspur",
+    "spurs": "Tottenham Hotspur",
+    "man city": "Manchester City",
+    "man utd": "Manchester United",
+    "manchester utd": "Manchester United",
+    "newcastle": "Newcastle United",
+    "wolves": "Wolverhampton Wanderers",
+    "west ham": "West Ham United",
+    "fenerbahçe": "Fenerbahce",
+    "beşiktaş": "Besiktas",
+    "galatasaray sk": "Galatasaray",
+    "genua cfc": "Genoa",
+    "fc venedig": "Venezia",
+    "fc turin": "Torino",
+    "lazio rom": "Lazio",
+    "as saint-etienne": "Saint-Etienne",
+    "girondins bordeaux": "Girondins Bordeaux",
+    "rc strasbourg alsace": "Strasbourg",
+    "losc lille": "Lille OSC",
+    "lille": "Lille OSC",
+    "ogc nizza": "OGC Nice",
+    "nice": "OGC Nice",
+    "stade rennais": "Stade Rennais",
+    "rennes": "Stade Rennais",
+    "stade brestois 29": "Stade Brestois",
+    "brest": "Stade Brestois",
+    "aj auxerre": "Auxerre",
+    "tsg 1899 hoffenheim": "TSG Hoffenheim",
+    "hoffenheim": "TSG Hoffenheim",
+    "sport-club freiburg": "SC Freiburg",
+    "freiburg": "SC Freiburg",
+    "sv werder bremen": "Werder Bremen",
+    "werder": "Werder Bremen",
+    "rasenballsport leipzig": "RB Leipzig",
+    "rb leipzig": "RB Leipzig",
+    "eintracht frankfurt": "Eintracht Frankfurt",
+    "frankfurt": "Eintracht Frankfurt",
+    "vfb stuttgart": "VfB Stuttgart",
+    "stuttgart": "VfB Stuttgart",
     "borussia mönchengladbach": "Borussia Monchengladbach",
-    "gladbach":                 "Borussia Monchengladbach",
-    "1. fc union berlin":       "1. FC Union Berlin",
-    "union berlin":             "1. FC Union Berlin",
-    "vfl bochum":               "VfL Bochum",
-    "sv darmstadt 98":          "SV Darmstadt 98",
-    "darmstadt":                "SV Darmstadt 98",
-    "1. fc heidenheim 1846":    "1. FC Heidenheim",
-    "heidenheim":               "1. FC Heidenheim",
-    "fc st. pauli":             "FC St. Pauli",
-    "st. pauli":                "FC St. Pauli",
-    "vfl wolfsburg":            "VfL Wolfsburg",
-    "wolfsburg":                "VfL Wolfsburg",
-    "fc augsburg":              "FC Augsburg",
-    "augsburg":                 "FC Augsburg",
-    "hellas verona":            "Hellas Verona",
-    "verona":                   "Hellas Verona",
-    "udinese calcio":           "Udinese",
-    "cagliari calcio":          "Cagliari",
-    "acf fiorentina":           "Fiorentina",
-    "fc bologna":               "Bologna",
-    "atalanta bergamo":         "Atalanta",
-    "como 1907":                "Como",
-    "parma calcio 1913":        "Parma",
-    "fc empoli":                "Empoli",
-    "us lecce":                 "Lecce",
-    "ac monza":                 "Monza",
-    "genua":                    "Genoa",
-    "brighton":                 "Brighton & Hove Albion",
-    "brighton & hove albion":   "Brighton & Hove Albion",
-    "nottingham forest":        "Nottingham Forest",
-    "forest":                   "Nottingham Forest",
-    "afc bournemouth":          "Bournemouth",
-    "leicester":                "Leicester City",
-    "ipswich":                  "Ipswich Town",
-    "crystal palace":           "Crystal Palace",
-    "aston villa":              "Aston Villa",
-    "brentford fc":             "Brentford",
-    "fc chelsea":               "Chelsea",
-    "fc everton":               "Everton",
-    "fc fulham":                "Fulham",
-    "fc liverpool":             "Liverpool",
-    "fc southampton":           "Southampton",
-    "villarreal":               "Villarreal CF",
-    "real betis":               "Real Betis",
-    "real sociedad":            "Real Sociedad",
-    "athletic club":            "Athletic Bilbao",
-    "athletic bilbao":          "Athletic Bilbao",
-    "celta vigo":               "Celta Vigo",
-    "rc celta de vigo":         "Celta Vigo",
-    "rayo vallecano":           "Rayo Vallecano",
-    "ca osasuna":               "Osasuna",
-    "getafe":                   "Getafe CF",
-    "girona":                   "Girona FC",
-    "las palmas":               "UD Las Palmas",
-    "alaves":                   "Deportivo Alaves",
-    "deportivo alaves":         "Deportivo Alaves",
-    "mallorca":                 "RCD Mallorca",
-    "rcd mallorca":             "RCD Mallorca",
-    "leganes":                  "CD Leganes",
-    "valladolid":               "Real Valladolid",
-    "espanyol":                 "Espanyol",
-    "rcd espanyol":             "Espanyol",
-    "sevilla":                  "Sevilla FC",
-    "fc sevilla":               "Sevilla FC",
-    "valencia":                 "Valencia CF",
-    "fc valencia":              "Valencia CF",
-    "trabzonspor":              "Trabzonspor",
-    "besiktas jk":              "Besiktas",
-    "fenerbahce sk":            "Fenerbahce",
+    "gladbach": "Borussia Monchengladbach",
+    "1. fc union berlin": "1. FC Union Berlin",
+    "union berlin": "1. FC Union Berlin",
+    "vfl bochum": "VfL Bochum",
+    "sv darmstadt 98": "SV Darmstadt 98",
+    "darmstadt": "SV Darmstadt 98",
+    "1. fc heidenheim 1846": "1. FC Heidenheim",
+    "heidenheim": "1. FC Heidenheim",
+    "fc st. pauli": "FC St. Pauli",
+    "st. pauli": "FC St. Pauli",
+    "vfl wolfsburg": "VfL Wolfsburg",
+    "wolfsburg": "VfL Wolfsburg",
+    "fc augsburg": "FC Augsburg",
+    "augsburg": "FC Augsburg",
+    "hellas verona": "Hellas Verona",
+    "verona": "Hellas Verona",
+    "udinese calcio": "Udinese",
+    "cagliari calcio": "Cagliari",
+    "acf fiorentina": "Fiorentina",
+    "fc bologna": "Bologna",
+    "atalanta bergamo": "Atalanta",
+    "como 1907": "Como",
+    "parma calcio 1913": "Parma",
+    "fc empoli": "Empoli",
+    "us lecce": "Lecce",
+    "ac monza": "Monza",
+    "genua": "Genoa",
+    "brighton": "Brighton & Hove Albion",
+    "brighton & hove albion": "Brighton & Hove Albion",
+    "nottingham forest": "Nottingham Forest",
+    "forest": "Nottingham Forest",
+    "afc bournemouth": "Bournemouth",
+    "leicester": "Leicester City",
+    "ipswich": "Ipswich Town",
+    "crystal palace": "Crystal Palace",
+    "aston villa": "Aston Villa",
+    "brentford fc": "Brentford",
+    "fc chelsea": "Chelsea",
+    "fc everton": "Everton",
+    "fc fulham": "Fulham",
+    "fc liverpool": "Liverpool",
+    "fc southampton": "Southampton",
+    "villarreal": "Villarreal CF",
+    "real betis": "Real Betis",
+    "real sociedad": "Real Sociedad",
+    "athletic club": "Athletic Bilbao",
+    "athletic bilbao": "Athletic Bilbao",
+    "celta vigo": "Celta Vigo",
+    "rc celta de vigo": "Celta Vigo",
+    "rayo vallecano": "Rayo Vallecano",
+    "ca osasuna": "Osasuna",
+    "getafe": "Getafe CF",
+    "girona": "Girona FC",
+    "las palmas": "UD Las Palmas",
+    "alaves": "Deportivo Alaves",
+    "deportivo alaves": "Deportivo Alaves",
+    "mallorca": "RCD Mallorca",
+    "rcd mallorca": "RCD Mallorca",
+    "leganes": "CD Leganes",
+    "valladolid": "Real Valladolid",
+    "espanyol": "Espanyol",
+    "rcd espanyol": "Espanyol",
+    "sevilla": "Sevilla FC",
+    "fc sevilla": "Sevilla FC",
+    "valencia": "Valencia CF",
+    "fc valencia": "Valencia CF",
+    "trabzonspor": "Trabzonspor",
+    "besiktas jk": "Besiktas",
+    "fenerbahce sk": "Fenerbahce",
 }
 
 
@@ -373,7 +373,9 @@ def build_driver(headless: bool = True) -> webdriver.Chrome:
     driver = webdriver.Chrome(service=service, options=opts)
     driver.execute_cdp_cmd(
         "Page.addScriptToEvaluateOnNewDocument",
-        {"source": "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"},
+        {
+            "source": "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+        },
     )
     return driver
 
@@ -382,7 +384,10 @@ def dismiss_cookies(driver: webdriver.Chrome) -> None:
     try:
         btn = WebDriverWait(driver, 6).until(
             EC.element_to_be_clickable(
-                (By.XPATH, "//button[contains(., 'Agree') or contains(., 'Accept') or @id='onetrust-accept-btn-handler']")
+                (
+                    By.XPATH,
+                    "//button[contains(., 'Agree') or contains(., 'Accept') or @id='onetrust-accept-btn-handler']",
+                )
             )
         )
         btn.click()
@@ -430,7 +435,10 @@ def scrape_player_injuries(
     try:
         detailed_btn = WebDriverWait(driver, 8).until(
             EC.element_to_be_clickable(
-                (By.XPATH, "//a[normalize-space()='Detailed'] | //span[normalize-space()='Detailed']")
+                (
+                    By.XPATH,
+                    "//a[normalize-space()='Detailed'] | //span[normalize-space()='Detailed']",
+                )
             )
         )
         detailed_btn.click()
@@ -442,7 +450,12 @@ def scrape_player_injuries(
     # ── Wait for injury table ──
     try:
         WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, "//h2[contains(text(),'Injury') or contains(text(),'injury')] | //div[contains(@class,'verletzungen')]"))
+            EC.presence_of_element_located(
+                (
+                    By.XPATH,
+                    "//h2[contains(text(),'Injury') or contains(text(),'injury')] | //div[contains(@class,'verletzungen')]",
+                )
+            )
         )
     except TimeoutException:
         pass
@@ -467,10 +480,12 @@ def scrape_player_injuries(
         items = driver.find_elements(By.CSS_SELECTOR, "table.items")
         if items:
             injury_table = items[0]
-            log.info(f"  Using first table.items as fallback")
+            log.info("  Using first table.items as fallback")
 
     if not injury_table:
-        log.info(f"  No injury table found for {player_name} — clean record or blocked.")
+        log.info(
+            f"  No injury table found for {player_name} — clean record or blocked."
+        )
         return []
 
     rows: list[InjuryRow] = []
@@ -482,11 +497,11 @@ def scrape_player_injuries(
             continue
 
         try:
-            season       = cells[0].text.strip() if len(cells) > 0 else ""
-            injury_type  = cells[1].text.strip() if len(cells) > 1 else ""
-            injury_date  = cells[2].text.strip() if len(cells) > 2 else ""
-            return_date  = cells[3].text.strip() if len(cells) > 3 else ""
-            days_missed  = cells[4].text.strip() if len(cells) > 4 else ""
+            season = cells[0].text.strip() if len(cells) > 0 else ""
+            injury_type = cells[1].text.strip() if len(cells) > 1 else ""
+            injury_date = cells[2].text.strip() if len(cells) > 2 else ""
+            return_date = cells[3].text.strip() if len(cells) > 3 else ""
+
             games_missed = ""
             raw_opponent = ""
 
@@ -519,18 +534,20 @@ def scrape_player_injuries(
             if not injury_type and not injury_date:
                 continue
 
-            rows.append(InjuryRow(
-                player_name     = player_name,
-                player_tm_id    = player_tm_id,
-                current_club    = current_club,
-                season          = season,
-                injury_type     = injury_type,
-                injury_date     = injury_date,
-                return_date     = return_date,
-                games_missed    = games_missed,
-                opponent_club   = raw_opponent,
-                opponent_mapped = opponent_mapped,
-            ))
+            rows.append(
+                InjuryRow(
+                    player_name=player_name,
+                    player_tm_id=player_tm_id,
+                    current_club=current_club,
+                    season=season,
+                    injury_type=injury_type,
+                    injury_date=injury_date,
+                    return_date=return_date,
+                    games_missed=games_missed,
+                    opponent_club=raw_opponent,
+                    opponent_mapped=opponent_mapped,
+                )
+            )
 
         except Exception as e:
             log.debug(f"  Row parse error for {player_name}: {e}")
@@ -573,18 +590,17 @@ def run(input_path: str, output_path: str, headless: bool = True) -> None:
 
     driver = build_driver(headless=headless)
     all_injuries: list[InjuryRow] = []
-    cookies_dismissed = False
 
     try:
         for i, row in enumerate(squad_df.itertuples(), 1):
             log.info(f"[{i}/{total}] {row.player_name} — {row.club_name}")
 
             injuries = scrape_player_injuries(
-                driver       = driver,
-                player_name  = str(row.player_name),
-                player_tm_id = str(row.player_tm_id),
-                current_club = str(row.club_name),
-                profile_url  = str(row.profile_url),
+                driver=driver,
+                player_name=str(row.player_name),
+                player_tm_id=str(row.player_tm_id),
+                current_club=str(row.club_name),
+                profile_url=str(row.profile_url),
             )
             all_injuries.extend(injuries)
 
@@ -604,14 +620,22 @@ def run(input_path: str, output_path: str, headless: bool = True) -> None:
     save_csv(all_injuries, output_path, checkpoint=False)
 
     # Summary
-    log.info(f"\n✅ Done. {len(all_injuries)} total injury records saved to {output_path}")
+    log.info(
+        f"\n✅ Done. {len(all_injuries)} total injury records saved to {output_path}"
+    )
     if all_injuries:
         df = pd.DataFrame([vars(r) for r in all_injuries])
-        log.info(f"\nOpponent mapping summary:")
-        log.info(f"  Mapped to known club : {len(df[(df['opponent_mapped'] != 'Unspecified') & (df['opponent_mapped'] != '')])}")
-        log.info(f"  Unspecified (unknown): {(df['opponent_mapped'] == 'Unspecified').sum()}")
+        log.info("\nOpponent mapping summary:")
+        log.info(
+            f"  Mapped to known club : {len(df[(df['opponent_mapped'] != 'Unspecified') & (df['opponent_mapped'] != '')])}"
+        )
+        log.info(
+            f"  Unspecified (unknown): {(df['opponent_mapped'] == 'Unspecified').sum()}"
+        )
         log.info(f"  No opponent data     : {(df['opponent_mapped'] == '').sum()}")
-        log.info(f"\nTop injury types:\n{df['injury_type'].value_counts().head(10).to_string()}")
+        log.info(
+            f"\nTop injury types:\n{df['injury_type'].value_counts().head(10).to_string()}"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -622,12 +646,14 @@ if __name__ == "__main__":
         description="Scrape Transfermarkt injury history for all players in squad_data.csv"
     )
     parser.add_argument(
-        "--input", "-i",
+        "--input",
+        "-i",
         default="data/raw/squad_data.csv",
         help="Path to squad_data.csv from tm_squad_scraper.py",
     )
     parser.add_argument(
-        "--output", "-o",
+        "--output",
+        "-o",
         default="data/raw/injury_data.csv",
         help="Output CSV path (default: data/raw/injury_data.csv)",
     )
@@ -639,7 +665,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     run(
-        input_path  = args.input,
-        output_path = args.output,
-        headless    = not args.no_headless,
+        input_path=args.input,
+        output_path=args.output,
+        headless=not args.no_headless,
     )

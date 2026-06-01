@@ -15,7 +15,6 @@ import logging
 import pickle
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 import shap
 from imblearn.over_sampling import SMOTE
@@ -31,13 +30,29 @@ logger = logging.getLogger(__name__)
 
 # Features used for training — mirrors PRD Section 5
 FEATURE_COLS = [
-    "age", "height_cm", "weight_kg", "position_code",
-    "injury_count_2y", "days_since_last_injury",
-    "has_acl", "has_hamstring", "has_ankle", "has_meniscus",
-    "minutes_last_30d", "games_last_14d", "season_minutes", "avg_minutes_per_game",
-    "upcoming_surface", "home_surface", "is_home",
-    "league_pl", "league_la_liga", "league_bundesliga",
-    "league_serie_a", "league_ligue_1", "league_super_lig",
+    "age",
+    "height_cm",
+    "weight_kg",
+    "position_code",
+    "injury_count_2y",
+    "days_since_last_injury",
+    "has_acl",
+    "has_hamstring",
+    "has_ankle",
+    "has_meniscus",
+    "minutes_last_30d",
+    "games_last_14d",
+    "season_minutes",
+    "avg_minutes_per_game",
+    "upcoming_surface",
+    "home_surface",
+    "is_home",
+    "league_pl",
+    "league_la_liga",
+    "league_bundesliga",
+    "league_serie_a",
+    "league_ligue_1",
+    "league_super_lig",
 ]
 
 TARGET_COL = "risk_label"  # 0=Low, 1=Medium, 2=High
@@ -67,13 +82,16 @@ def apply_smote(X: pd.DataFrame, y: pd.Series):
     """Apply SMOTE to handle class imbalance (injuries are rare events)."""
     smote = SMOTE(random_state=42)
     X_res, y_res = smote.fit_resample(X, y)
-    logger.info(f"After SMOTE — class distribution: {pd.Series(y_res).value_counts().to_dict()}")
+    logger.info(
+        f"After SMOTE — class distribution: {pd.Series(y_res).value_counts().to_dict()}"
+    )
     return X_res, y_res
 
 
 def get_model(model_type: str):
     if model_type == "xgboost":
         from xgboost import XGBClassifier
+
         return XGBClassifier(
             n_estimators=300,
             max_depth=6,
@@ -84,6 +102,7 @@ def get_model(model_type: str):
         )
     elif model_type == "lightgbm":
         from lightgbm import LGBMClassifier
+
         return LGBMClassifier(
             n_estimators=300,
             max_depth=6,
@@ -93,6 +112,7 @@ def get_model(model_type: str):
         )
     elif model_type == "random_forest":
         from sklearn.ensemble import RandomForestClassifier
+
         return RandomForestClassifier(n_estimators=300, random_state=42, n_jobs=-1)
     else:
         raise ValueError(f"Unknown model type: {model_type}")
@@ -105,7 +125,9 @@ def evaluate(model, X_test: pd.DataFrame, y_test: pd.Series) -> dict:
     y_bin = label_binarize(y_test, classes=[0, 1, 2])
     auc = roc_auc_score(y_bin, y_prob, multi_class="ovr", average="macro")
 
-    report = classification_report(y_test, y_pred, target_names=list(RISK_LABELS.values()), output_dict=True)
+    report = classification_report(
+        y_test, y_pred, target_names=list(RISK_LABELS.values()), output_dict=True
+    )
     macro_f1 = f1_score(y_test, y_pred, average="macro")
 
     metrics = {
@@ -121,7 +143,8 @@ def compute_shap(model, X_train: pd.DataFrame, output_dir: Path):
     """Compute and save SHAP explainer for dashboard use."""
     logger.info("Computing SHAP values...")
     explainer = shap.TreeExplainer(model)
-    shap_values = explainer.shap_values(X_train.sample(min(500, len(X_train)), random_state=42))
+
+    explainer.shap_values(X_train.sample(min(500, len(X_train)), random_state=42))
 
     with open(output_dir / "shap_explainer.pkl", "wb") as f:
         pickle.dump(explainer, f)
@@ -179,7 +202,9 @@ def main(features_path: str, model_type: str, output_dir: str):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--features", default="data/processed/features.parquet")
-    parser.add_argument("--model", default="xgboost", choices=["xgboost", "lightgbm", "random_forest"])
+    parser.add_argument(
+        "--model", default="xgboost", choices=["xgboost", "lightgbm", "random_forest"]
+    )
     parser.add_argument("--output", default="models/")
     args = parser.parse_args()
     main(args.features, args.model, args.output)

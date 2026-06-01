@@ -9,7 +9,6 @@ Usage:
 """
 
 import logging
-from pathlib import Path
 
 import pandas as pd
 import numpy as np
@@ -29,13 +28,16 @@ IMPACT_INJURY_KEYWORDS = {
 LEAGUES = ["pl", "la_liga", "bundesliga", "serie_a", "ligue_1", "super_lig"]
 
 
-def load_surface_map(surface_file: str = "data/surface_mapping/stadium_surfaces.csv") -> dict:
+def load_surface_map(
+    surface_file: str = "data/surface_mapping/stadium_surfaces.csv",
+) -> dict:
     """
     Load the manual stadium surface lookup table.
     Returns dict: {club_name: surface_type}  where surface_type in {0, 1}
     (0 = natural grass, 1 = artificial turf)
     """
     df = pd.read_csv(surface_file)
+    df["surface_type"] = pd.to_numeric(df["surface_type"], errors="coerce")
     return dict(zip(df["club_name"], df["surface_type"]))
 
 
@@ -69,7 +71,8 @@ def encode_injury_history(injury_df: pd.DataFrame) -> dict:
     last_injury_date = injury_df["from_date"].dropna().max()
     days_since = (
         (pd.Timestamp.now() - last_injury_date).days
-        if pd.notna(last_injury_date) else None
+        if pd.notna(last_injury_date)
+        else None
     )
 
     return {
@@ -79,6 +82,25 @@ def encode_injury_history(injury_df: pd.DataFrame) -> dict:
         "has_hamstring": flags["hamstring"],
         "has_ankle": flags["ankle"],
         "has_meniscus": flags["meniscus"],
+    }
+
+
+def compute_congestion(logs: pd.DataFrame, reference: pd.Timestamp) -> dict:
+    """
+    Compute recent match congestion features.
+    """
+
+    last_14d = logs[
+        (logs["date"] >= reference - pd.Timedelta(days=14)) & (logs["date"] < reference)
+    ]
+
+    last_30d = logs[
+        (logs["date"] >= reference - pd.Timedelta(days=30)) & (logs["date"] < reference)
+    ]
+
+    return {
+        "games_last_14d": len(last_14d),
+        "minutes_last_30d": int(last_30d["minutes_played"].sum()),
     }
 
 
@@ -111,7 +133,9 @@ def build_player_features(
             age = np.nan
 
         try:
-            height = float(str(player.get("height", "")).replace("m", "").replace(",", ".").strip())
+            height = float(
+                str(player.get("height", "")).replace("m", "").replace(",", ".").strip()
+            )
         except (ValueError, TypeError):
             height = np.nan
 
@@ -121,13 +145,23 @@ def build_player_features(
             weight = np.nan
 
         # ---- Injury history ----
-        player_injuries = injury_df[injury_df["player_id"] == player_id] if "player_id" in injury_df.columns else pd.DataFrame()
+        player_injuries = (
+            injury_df[injury_df["player_id"] == player_id]
+            if "player_id" in injury_df.columns
+            else pd.DataFrame()
+        )
         injury_feats = encode_injury_history(player_injuries)
 
         # ---- Workload / congestion ----
-        player_logs = match_log_df[match_log_df["player_id"] == player_id] if "player_id" in match_log_df.columns else pd.DataFrame()
+        player_logs = (
+            match_log_df[match_log_df["player_id"] == player_id]
+            if "player_id" in match_log_df.columns
+            else pd.DataFrame()
+        )
         if not player_logs.empty:
-            past = player_logs[player_logs["date"] < reference_date].sort_values("date", ascending=False)
+            past = player_logs[player_logs["date"] < reference_date].sort_values(
+                "date", ascending=False
+            )
             last_30d = past[past["date"] >= reference_date - pd.Timedelta(days=30)]
             last_14d = past[past["date"] >= reference_date - pd.Timedelta(days=14)]
             season_mins = past["minutes_played"].sum()
@@ -159,7 +193,9 @@ def build_player_features(
             # Injury history
             **injury_feats,
             # Workload
-            "minutes_last_30d": last_30d["minutes_played"].sum() if not last_30d.empty else np.nan,
+            "minutes_last_30d": (
+                last_30d["minutes_played"].sum() if not last_30d.empty else np.nan
+            ),
             "games_last_14d": len(last_14d),
             "season_minutes": season_mins,
             "avg_minutes_per_game": avg_mins,

@@ -22,7 +22,6 @@ Requirements:
 import argparse
 import time
 import random
-import re
 import logging
 import pandas as pd
 
@@ -70,7 +69,9 @@ def build_driver(headless: bool = True) -> webdriver.Chrome:
     driver = webdriver.Chrome(service=service, options=opts)
     driver.execute_cdp_cmd(
         "Page.addScriptToEvaluateOnNewDocument",
-        {"source": "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"},
+        {
+            "source": "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+        },
     )
     return driver
 
@@ -81,11 +82,13 @@ def build_driver(headless: bool = True) -> webdriver.Chrome:
 def dismiss_cookies(driver: webdriver.Chrome) -> None:
     try:
         btn = WebDriverWait(driver, 6).until(
-            EC.element_to_be_clickable((
-                By.XPATH,
-                "//button[contains(., 'Agree') or contains(., 'Accept') "
-                "or @id='onetrust-accept-btn-handler']"
-            ))
+            EC.element_to_be_clickable(
+                (
+                    By.XPATH,
+                    "//button[contains(., 'Agree') or contains(., 'Accept') "
+                    "or @id='onetrust-accept-btn-handler']",
+                )
+            )
         )
         btn.click()
         time.sleep(1)
@@ -114,24 +117,26 @@ def safe_attr(driver, css: str, attr: str) -> str:
 # ---------------------------------------------------------------------------
 # Scrape a single player profile
 # ---------------------------------------------------------------------------
-def scrape_player_bio(driver: webdriver.Chrome, player_tm_id: str, profile_url: str, player_name: str) -> dict:
+def scrape_player_bio(
+    driver: webdriver.Chrome, player_tm_id: str, profile_url: str, player_name: str
+) -> dict:
     """
     Visit a Transfermarkt player profile page and extract bio details.
     Returns a dict of scraped fields.
     """
     base = {
-        "player_tm_id":      player_tm_id,
-        "player_name":       player_name,
-        "profile_url":       profile_url,
-        "dob":               "",
-        "age":               "",
-        "height_cm":         "",
-        "nationality":       "",
-        "second_nationality":"",
+        "player_tm_id": player_tm_id,
+        "player_name": player_name,
+        "profile_url": profile_url,
+        "dob": "",
+        "age": "",
+        "height_cm": "",
+        "nationality": "",
+        "second_nationality": "",
         "detailed_position": "",
-        "strong_foot":       "",
-        "current_club":      "",
-        "scrape_status":     "ok",
+        "strong_foot": "",
+        "current_club": "",
+        "scrape_status": "ok",
     }
 
     try:
@@ -159,7 +164,9 @@ def scrape_player_bio(driver: webdriver.Chrome, player_tm_id: str, profile_url: 
     # ── Parse the info-table rows ──────────────────────────────────────────
     # TM's bio table is a series of <span class="info-table__content"> pairs
     try:
-        rows = driver.find_elements(By.CSS_SELECTOR, "div.info-table span.info-table__content")
+        rows = driver.find_elements(
+            By.CSS_SELECTOR, "div.info-table span.info-table__content"
+        )
         # Rows come in label/value pairs
         for i in range(0, len(rows) - 1, 2):
             label = rows[i].text.strip().lower()
@@ -213,10 +220,12 @@ def scrape_player_bio(driver: webdriver.Chrome, player_tm_id: str, profile_url: 
 def load_squad_excel(path: str) -> pd.DataFrame:
     try:
         # Try reading as standard Excel workbook
-        df = pd.read_excel(path, engine='openpyxl')
+        df = pd.read_excel(path, engine="openpyxl")
     except Exception:
         # Fallback if it's actually a CSV masquerading as an XLSX file
-        log.warning("⚠️ Excel format could not be read. Attempting to read as a CSV file instead...")
+        log.warning(
+            "⚠️ Excel format could not be read. Attempting to read as a CSV file instead..."
+        )
         df = pd.read_csv(path)
 
     df.columns = [c.strip().lower().replace(" ", "_") for c in df.columns]
@@ -224,17 +233,19 @@ def load_squad_excel(path: str) -> pd.DataFrame:
     required = {"player_tm_id", "profile_url", "player_name"}
     missing = required - set(df.columns)
     if missing:
-        raise ValueError(f"File is missing columns: {missing}. Found: {list(df.columns)}")
+        raise ValueError(
+            f"File is missing columns: {missing}. Found: {list(df.columns)}"
+        )
 
     # Drop rows with no profile URL or player ID
     df = df.dropna(subset=["player_tm_id", "profile_url"])
     df["player_tm_id"] = df["player_tm_id"].astype(str).str.strip()
-    df["profile_url"]  = df["profile_url"].astype(str).str.strip()
+    df["profile_url"] = df["profile_url"].astype(str).str.strip()
 
     # Deduplicate on player_tm_id — keep first occurrence
     before = len(df)
     df = df.drop_duplicates(subset=["player_tm_id"])
-    after  = len(df)
+    after = len(df)
     if before != after:
         log.info(f"Removed {before - after} duplicate player IDs.")
 
@@ -245,7 +256,9 @@ def load_squad_excel(path: str) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
-def run(input_path: str, output_path: str, headless: bool = True, resume: bool = True) -> None:
+def run(
+    input_path: str, output_path: str, headless: bool = True, resume: bool = True
+) -> None:
     df = load_squad_excel(input_path)
 
     # ── Resume support: skip already-scraped players ──────────────────────
@@ -254,7 +267,9 @@ def run(input_path: str, output_path: str, headless: bool = True, resume: bool =
         try:
             done_df = pd.read_csv(output_path, dtype=str)
             already_done = set(done_df["player_tm_id"].dropna().tolist())
-            log.info(f"Resuming — {len(already_done)} players already scraped, skipping them.")
+            log.info(
+                f"Resuming — {len(already_done)} players already scraped, skipping them."
+            )
         except FileNotFoundError:
             pass
 
@@ -271,8 +286,8 @@ def run(input_path: str, output_path: str, headless: bool = True, resume: bool =
     try:
         for i, (_, row) in enumerate(to_scrape.iterrows(), 1):
             player_tm_id = str(row["player_tm_id"])
-            profile_url  = str(row["profile_url"])
-            player_name  = str(row.get("player_name", ""))
+            profile_url = str(row["profile_url"])
+            player_name = str(row.get("player_name", ""))
 
             log.info(f"[{i}/{len(to_scrape)}] {player_name} (ID: {player_tm_id})")
 
@@ -301,12 +316,14 @@ def run(input_path: str, output_path: str, headless: bool = True, resume: bool =
     # Final summary
     final_df = pd.read_csv(output_path)
     log.info(f"\n✅ Done. {len(final_df)} player bios saved to {output_path}")
-    ok    = (final_df["scrape_status"] == "ok").sum()
+    ok = (final_df["scrape_status"] == "ok").sum()
     fails = len(final_df) - ok
     log.info(f"   Successful: {ok}  |  Failed/timeout: {fails}")
 
 
-def _append_and_save(new_rows: list[dict], output_path: str, already_done: set[str]) -> None:
+def _append_and_save(
+    new_rows: list[dict], output_path: str, already_done: set[str]
+) -> None:
     new_df = pd.DataFrame(new_rows)
     try:
         existing = pd.read_csv(output_path, dtype=str)
@@ -323,19 +340,30 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Scrape Transfermarkt player bio details from profile URLs."
     )
-    parser.add_argument("--input",  "-i", required=True,
-                        help="Path to combined squad Excel file")
-    parser.add_argument("--output", "-o", default="data/raw/player_bios.csv",
-                        help="Output CSV path (default: data/raw/player_bios.csv)")
-    parser.add_argument("--no-headless", action="store_true",
-                        help="Show Chrome window (useful for debugging)")
-    parser.add_argument("--no-resume", action="store_true",
-                        help="Start fresh, ignore any existing output file")
+    parser.add_argument(
+        "--input", "-i", required=True, help="Path to combined squad Excel file"
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        default="data/raw/player_bios.csv",
+        help="Output CSV path (default: data/raw/player_bios.csv)",
+    )
+    parser.add_argument(
+        "--no-headless",
+        action="store_true",
+        help="Show Chrome window (useful for debugging)",
+    )
+    parser.add_argument(
+        "--no-resume",
+        action="store_true",
+        help="Start fresh, ignore any existing output file",
+    )
     args = parser.parse_args()
 
     run(
-        input_path  = args.input,
-        output_path = args.output,
-        headless    = not args.no_headless,
-        resume      = not args.no_resume,
+        input_path=args.input,
+        output_path=args.output,
+        headless=not args.no_headless,
+        resume=not args.no_resume,
     )
