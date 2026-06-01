@@ -31,13 +31,29 @@ SHAP_PATH = Path("models/shap_explainer.pkl")
 FEATURES_PATH = Path("data/processed/features.parquet")
 
 FEATURE_COLS = [
-    "age", "height_cm", "weight_kg", "position_code",
-    "injury_count_2y", "days_since_last_injury",
-    "has_acl", "has_hamstring", "has_ankle", "has_meniscus",
-    "minutes_last_30d", "games_last_14d", "season_minutes", "avg_minutes_per_game",
-    "upcoming_surface", "home_surface", "is_home",
-    "league_pl", "league_la_liga", "league_bundesliga",
-    "league_serie_a", "league_ligue_1", "league_super_lig",
+    "age",
+    "height_cm",
+    "weight_kg",
+    "position_code",
+    "injury_count_2y",
+    "days_since_last_injury",
+    "has_acl",
+    "has_hamstring",
+    "has_ankle",
+    "has_meniscus",
+    "minutes_last_30d",
+    "games_last_14d",
+    "season_minutes",
+    "avg_minutes_per_game",
+    "upcoming_surface",
+    "home_surface",
+    "is_home",
+    "league_pl",
+    "league_la_liga",
+    "league_bundesliga",
+    "league_serie_a",
+    "league_ligue_1",
+    "league_super_lig",
 ]
 
 
@@ -71,7 +87,11 @@ def load_features():
 # Sidebar navigation
 # ──────────────────────────────────────────────
 def sidebar():
-    st.sidebar.image("docs/pitchguard_logo.png", use_column_width=True) if Path("docs/pitchguard_logo.png").exists() else st.sidebar.title("⚽ PitchGuard")
+    (
+        st.sidebar.image("docs/pitchguard_logo.png", use_column_width=True)
+        if Path("docs/pitchguard_logo.png").exists()
+        else st.sidebar.title("⚽ PitchGuard")
+    )
     st.sidebar.markdown("**Football Injury Risk Predictor**")
     st.sidebar.divider()
 
@@ -83,7 +103,11 @@ def sidebar():
     leagues = sorted(df["league"].unique()) if "league" in df.columns else []
     selected_league = st.sidebar.selectbox("League", leagues)
 
-    clubs = sorted(df[df["league"] == selected_league]["club"].unique()) if selected_league else []
+    clubs = (
+        sorted(df[df["league"] == selected_league]["club"].unique())
+        if selected_league
+        else []
+    )
     selected_club = st.sidebar.selectbox("Club", clubs)
 
     return selected_league, selected_club
@@ -110,7 +134,9 @@ def squad_overview(df: pd.DataFrame, model):
     )
 
     # Sort options
-    sort_by = st.selectbox("Sort by", ["risk_score", "position_code", "minutes_last_30d"])
+    sort_by = st.selectbox(
+        "Sort by", ["risk_score", "position_code", "minutes_last_30d"]
+    )
     df = df.sort_values(sort_by, ascending=False)
 
     # Display table with coloured badges
@@ -148,7 +174,9 @@ def player_detail(player: dict, model, explainer):
         score = round((prob[1] * 40 + prob[2] * 100), 1)
         risk = "Low" if score < 40 else "Medium" if score < 70 else "High"
         color = RISK_COLORS[risk]
-        st.markdown(f"<h1 style='color:{color}'>{score}% — {risk}</h1>", unsafe_allow_html=True)
+        st.markdown(
+            f"<h1 style='color:{color}'>{score}% — {risk}</h1>", unsafe_allow_html=True
+        )
 
         st.subheader("Injury Type Sub-scores")
         for inj_type in ["acl", "hamstring", "ankle", "meniscus"]:
@@ -157,7 +185,11 @@ def player_detail(player: dict, model, explainer):
 
     with col_right:
         st.subheader("Next Match Context")
-        surface = "🟡 Artificial Turf" if player.get("upcoming_surface") == 1 else "🟢 Natural Grass"
+        surface = (
+            "🟡 Artificial Turf"
+            if player.get("upcoming_surface") == 1
+            else "🟢 Natural Grass"
+        )
         venue = "Home" if player.get("is_home") else "Away"
         st.metric("Surface", surface)
         st.metric("Venue", venue)
@@ -168,7 +200,9 @@ def player_detail(player: dict, model, explainer):
         st.subheader("🔍 SHAP Explanation — Top Contributing Factors")
         shap_values = explainer.shap_values(X)
         # Show top 3 features for High risk class
-        shap_for_high = shap_values[2][0] if isinstance(shap_values, list) else shap_values[0]
+        shap_for_high = (
+            shap_values[2][0] if isinstance(shap_values, list) else shap_values[0]
+        )
         feature_importance = pd.Series(dict(zip(FEATURE_COLS, shap_for_high)))
         top3 = feature_importance.abs().nlargest(3).index.tolist()
         st.markdown("**Top 3 drivers of High risk:**")
@@ -195,7 +229,9 @@ def main():
         )
         return
 
-    club_df = df[(df["league"] == selected_league) & (df["club"] == selected_club)].copy()
+    club_df = df[
+        (df["league"] == selected_league) & (df["club"] == selected_club)
+    ].copy()
 
     if "selected_player" in st.session_state and st.session_state["selected_player"]:
         player_detail(st.session_state["selected_player"], model, explainer)

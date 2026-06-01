@@ -42,8 +42,12 @@ log = logging.getLogger("fbref_scraper")
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 SEASONS = [
-    "2019-2020", "2020-2021", "2021-2022",
-    "2022-2023", "2023-2024", "2024-2025",
+    "2019-2020",
+    "2020-2021",
+    "2021-2022",
+    "2022-2023",
+    "2023-2024",
+    "2024-2025",
 ]
 
 HEADERS = {
@@ -55,14 +59,14 @@ HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
 }
 
-SEARCH_URL   = "https://fbref.com/en/search/search.fcgi?search={}"
+SEARCH_URL = "https://fbref.com/en/search/search.fcgi?search={}"
 MATCHLOG_URL = "https://fbref.com/en/players/{}/matchlogs/{}/summary/"
 
 CHECKPOINT_EVERY = 20
 SEARCH_DELAY_MIN = 4.0
 SEARCH_DELAY_MAX = 6.0
-LOG_DELAY_MIN    = 5.0
-LOG_DELAY_MAX    = 8.0
+LOG_DELAY_MIN = 5.0
+LOG_DELAY_MAX = 8.0
 
 
 # ── Selenium browser ──────────────────────────────────────────────────────────
@@ -80,10 +84,12 @@ def build_driver() -> webdriver.Chrome:
     opts.add_argument("--lang=en-GB")
     opts.add_argument("--window-size=1920,1080")
     service = Service(ChromeDriverManager().install())
-    driver  = webdriver.Chrome(service=service, options=opts)
+    driver = webdriver.Chrome(service=service, options=opts)
     driver.execute_cdp_cmd(
         "Page.addScriptToEvaluateOnNewDocument",
-        {"source": "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"},
+        {
+            "source": "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+        },
     )
     return driver
 
@@ -91,11 +97,13 @@ def build_driver() -> webdriver.Chrome:
 def dismiss_cookies(driver: webdriver.Chrome) -> None:
     try:
         btn = WebDriverWait(driver, 5).until(
-            EC.element_to_be_clickable((
-                By.XPATH,
-                "//button[contains(., 'Agree') or contains(., 'Accept') "
-                "or contains(., 'consent')]"
-            ))
+            EC.element_to_be_clickable(
+                (
+                    By.XPATH,
+                    "//button[contains(., 'Agree') or contains(., 'Accept') "
+                    "or contains(., 'consent')]",
+                )
+            )
         )
         btn.click()
         time.sleep(1)
@@ -125,7 +133,7 @@ def search_fbref(driver: webdriver.Chrome, player_name: str):
 
     # Direct redirect to player page
     if "/en/players/" in current_url and "/search/" not in current_url:
-        m      = re.search(r"/en/players/([a-z0-9]+)/", current_url)
+        m = re.search(r"/en/players/([a-z0-9]+)/", current_url)
         slug_m = re.search(r"/en/players/[a-z0-9]+/([^/?]+)", current_url)
         if m:
             log.info(f"  Direct match: {m.group(1)}")
@@ -150,7 +158,7 @@ def search_fbref(driver: webdriver.Chrome, player_name: str):
     # Also try any player link on the page
     for a in soup.select("a[href*='/en/players/']"):
         href = a.get("href", "")
-        m    = re.search(r"/en/players/([a-z0-9]+)/", href)
+        m = re.search(r"/en/players/([a-z0-9]+)/", href)
         if m:
             slug_m = re.search(r"/en/players/[a-z0-9]+/([^/?]+)", href)
             log.info(f"  Fallback match: {m.group(1)} for '{player_name}'")
@@ -161,7 +169,9 @@ def search_fbref(driver: webdriver.Chrome, player_name: str):
 
 
 # ── Match log scraping via requests + pandas ──────────────────────────────────
-def scrape_season(fbref_id: str, season: str, player_name: str, player_tm_id: str) -> list[dict]:
+def scrape_season(
+    fbref_id: str, season: str, player_name: str, player_tm_id: str
+) -> list[dict]:
     url = MATCHLOG_URL.format(fbref_id, season)
     time.sleep(random.uniform(LOG_DELAY_MIN, LOG_DELAY_MAX))
 
@@ -210,21 +220,21 @@ def scrape_season(fbref_id: str, season: str, player_name: str, player_tm_id: st
     df.columns = [str(c).lower().strip() for c in df.columns]
 
     col_map = {
-        "date":     "match_date",
-        "comp":     "competition",
-        "squad":    "squad",
+        "date": "match_date",
+        "comp": "competition",
+        "squad": "squad",
         "opponent": "opponent",
-        "venue":    "home_away",
-        "min":      "minutes_played",
+        "venue": "home_away",
+        "min": "minutes_played",
     }
     df = df.rename(columns=col_map)
     keep = [c for c in col_map.values() if c in df.columns]
-    df   = df[keep].copy()
+    df = df[keep].copy()
 
-    df["season"]          = season
+    df["season"] = season
     df["fbref_player_id"] = fbref_id
-    df["player_name"]     = player_name
-    df["player_tm_id"]    = player_tm_id
+    df["player_name"] = player_name
+    df["player_tm_id"] = player_tm_id
 
     if "minutes_played" in df.columns:
         df["minutes_played"] = (
@@ -236,7 +246,9 @@ def scrape_season(fbref_id: str, season: str, player_name: str, player_tm_id: st
         df["minutes_played"] = pd.to_numeric(df["minutes_played"], errors="coerce")
 
     if "match_date" in df.columns:
-        df = df[df["match_date"].notna() & (df["match_date"].astype(str).str.strip() != "")]
+        df = df[
+            df["match_date"].notna() & (df["match_date"].astype(str).str.strip() != "")
+        ]
 
     rows = df.to_dict(orient="records")
     log.info(f"    [{season}] ✓ {len(rows)} appearances for {player_name}")
@@ -263,10 +275,10 @@ def load_crosswalk(path: str) -> dict:
 def save_crosswalk(crosswalk: dict, path: str) -> None:
     rows = [
         {
-            "player_tm_id":    tm_id,
-            "player_name":     v[0],
+            "player_tm_id": tm_id,
+            "player_name": v[0],
             "fbref_player_id": v[1],
-            "fbref_slug":      v[2],
+            "fbref_slug": v[2],
         }
         for tm_id, v in crosswalk.items()
     ]
@@ -285,27 +297,33 @@ def _append_to_csv(rows: list[dict], path: Path) -> None:
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 def run(input_path: str, output_path: str) -> None:
-    p        = Path(input_path)
-    squad_df = pd.read_excel(p, dtype=str) if p.suffix in (".xlsx", ".xls") else pd.read_csv(p, dtype=str)
+    p = Path(input_path)
+    squad_df = (
+        pd.read_excel(p, dtype=str)
+        if p.suffix in (".xlsx", ".xls")
+        else pd.read_csv(p, dtype=str)
+    )
     squad_df = squad_df.fillna("")
 
     required = {"player_name", "player_tm_id"}
-    missing  = required - set(squad_df.columns)
+    missing = required - set(squad_df.columns)
     if missing:
         raise ValueError(f"Input missing columns: {missing}")
 
-    before   = len(squad_df)
+    before = len(squad_df)
     squad_df = squad_df.drop_duplicates(subset=["player_tm_id"])
-    log.info(f"Loaded {len(squad_df)} unique players ({before - len(squad_df)} duplicates removed)")
+    log.info(
+        f"Loaded {len(squad_df)} unique players ({before - len(squad_df)} duplicates removed)"
+    )
 
-    out_path       = Path(output_path)
+    out_path = Path(output_path)
     crosswalk_path = str(out_path.parent / "fbref_crosswalk.csv")
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Resume support
     already_done: set[str] = set()
     if out_path.exists():
-        existing     = pd.read_csv(out_path, dtype=str)
+        existing = pd.read_csv(out_path, dtype=str)
         already_done = set(existing["player_tm_id"].dropna().unique())
         log.info(f"Resuming — {len(already_done)} players already scraped, skipping.")
 
@@ -314,13 +332,13 @@ def run(input_path: str, output_path: str) -> None:
     log.info("Starting Chrome for FBref search...")
     driver = build_driver()
 
-    all_rows:  list[dict] = []
-    processed: int        = 0
+    all_rows: list[dict] = []
+    processed: int = 0
     total = len(squad_df)
 
     try:
         for i, player in enumerate(squad_df.itertuples(), 1):
-            tm_id       = str(player.player_tm_id).strip()
+            tm_id = str(player.player_tm_id).strip()
             player_name = str(player.player_name).strip()
 
             log.info(f"[{i}/{total}] {player_name} (tm_id={tm_id})")
@@ -379,8 +397,10 @@ def run(input_path: str, output_path: str) -> None:
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Scrape FBref match logs for PitchGuard")
-    parser.add_argument("--input",  "-i", default="data/raw/squad_data_combined.csv")
+    parser = argparse.ArgumentParser(
+        description="Scrape FBref match logs for PitchGuard"
+    )
+    parser.add_argument("--input", "-i", default="data/raw/squad_data_combined.csv")
     parser.add_argument("--output", "-o", default="data/raw/match_logs_raw.csv")
     args = parser.parse_args()
     run(args.input, args.output)

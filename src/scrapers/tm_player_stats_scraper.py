@@ -53,23 +53,34 @@ logging.basicConfig(
 log = logging.getLogger("tm_stats")
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-SEASON_YEARS     = [2019, 2020, 2021, 2022, 2023, 2024]
-BASE_URL         = ("https://www.transfermarkt.co.in/{slug}/leistungsdaten"
-                    "/spieler/{tm_id}/saison/{year}/plus/1")
+SEASON_YEARS = [2019, 2020, 2021, 2022, 2023, 2024]
+BASE_URL = (
+    "https://www.transfermarkt.co.in/{slug}/leistungsdaten"
+    "/spieler/{tm_id}/saison/{year}/plus/1"
+)
 CHECKPOINT_EVERY = 30
-DELAY_MIN        = 6.0
-DELAY_MAX        = 10.0
-SEASON_DELAY     = 5.0
-PLAYER_DELAY     = 8.0
+DELAY_MIN = 6.0
+DELAY_MAX = 10.0
+SEASON_DELAY = 5.0
+PLAYER_DELAY = 8.0
 
 # Lines that signal end of the stats block
-STOP_WORDS = {"total:", "total", "compact", "detailed", "matchday",
-              "date", "venue", "home team", "away team"}
+STOP_WORDS = {
+    "total:",
+    "total",
+    "compact",
+    "detailed",
+    "matchday",
+    "date",
+    "venue",
+    "home team",
+    "away team",
+}
 
 # Value line patterns
-MINUTES_RE = re.compile(r"^[\d,]+'$")       # e.g. 4,140'
-NUMERIC_RE = re.compile(r"^[\d,]+$")        # e.g. 46
-DASH_RE    = re.compile(r"^-+$")            # e.g. -
+MINUTES_RE = re.compile(r"^[\d,]+'$")  # e.g. 4,140'
+NUMERIC_RE = re.compile(r"^[\d,]+$")  # e.g. 46
+DASH_RE = re.compile(r"^-+$")  # e.g. -
 
 
 # ── Browser ───────────────────────────────────────────────────────────────────
@@ -86,11 +97,13 @@ def build_driver() -> uc.Chrome:
 def dismiss_cookies(driver: uc.Chrome) -> None:
     try:
         btn = WebDriverWait(driver, 8).until(
-            EC.element_to_be_clickable((
-                By.XPATH,
-                "//button[contains(.,'Agree') or contains(.,'Accept') "
-                "or contains(.,'Consent') or @id='onetrust-accept-btn-handler']"
-            ))
+            EC.element_to_be_clickable(
+                (
+                    By.XPATH,
+                    "//button[contains(.,'Agree') or contains(.,'Accept') "
+                    "or contains(.,'Consent') or @id='onetrust-accept-btn-handler']",
+                )
+            )
         )
         btn.click()
         time.sleep(1.5)
@@ -100,8 +113,9 @@ def dismiss_cookies(driver: uc.Chrome) -> None:
 
 
 # ── Core parser ───────────────────────────────────────────────────────────────
-def parse_innertext(text: str, player_tm_id: str,
-                    player_name: str, season_label: str) -> list[dict]:
+def parse_innertext(
+    text: str, player_tm_id: str, player_name: str, season_label: str
+) -> list[dict]:
     """
     Parse body.innerText of a TM stats page.
     Finds the 'STATS OF' section, then walks line by line consuming
@@ -146,11 +160,11 @@ def parse_innertext(text: str, player_tm_id: str,
         if not appearances and not minutes:
             return None
         return {
-            "player_tm_id":   player_tm_id,
-            "player_name":    player_name,
-            "season":         season_label,
-            "competition":    comp,
-            "appearances":    appearances or "0",
+            "player_tm_id": player_tm_id,
+            "player_name": player_name,
+            "season": season_label,
+            "competition": comp,
+            "appearances": appearances or "0",
             "minutes_played": minutes or "",
         }
 
@@ -179,7 +193,7 @@ def parse_innertext(text: str, player_tm_id: str,
                     if r:
                         rows.append(r)
                 current_comp = None
-                values_buf   = []
+                values_buf = []
         else:
             # New competition name — flush previous
             if current_comp and values_buf:
@@ -187,7 +201,7 @@ def parse_innertext(text: str, player_tm_id: str,
                 if r:
                     rows.append(r)
             current_comp = line
-            values_buf   = []
+            values_buf = []
 
         i += 1
 
@@ -195,8 +209,9 @@ def parse_innertext(text: str, player_tm_id: str,
 
 
 # ── Scrape one season ─────────────────────────────────────────────────────────
-def scrape_season(driver: uc.Chrome, player_tm_id: str,
-                   player_name: str, season_year: int) -> list[dict]:
+def scrape_season(
+    driver: uc.Chrome, player_tm_id: str, player_name: str, season_year: int
+) -> list[dict]:
     season_label = f"{season_year}/{str(season_year + 1)[-2:]}"
 
     # Wait for body
@@ -229,7 +244,9 @@ def scrape_season(driver: uc.Chrome, player_tm_id: str,
             return []
     # Cloudflare check
     if "just a moment" in (driver.title or "").lower():
-        log.warning(f"      Cloudflare block for {player_name} {season_label} — waiting 30s")
+        log.warning(
+            f"      Cloudflare block for {player_name} {season_label} — waiting 30s"
+        )
         time.sleep(30)
         text = driver.execute_script("return document.body.innerText;") or ""
 
@@ -239,9 +256,13 @@ def scrape_season(driver: uc.Chrome, player_tm_id: str,
 
 
 # ── Scrape one player ─────────────────────────────────────────────────────────
-def scrape_player(driver: uc.Chrome, player_tm_id: str,
-                   player_name: str, slug: str,
-                   cookies_dismissed: list) -> list[dict]:
+def scrape_player(
+    driver: uc.Chrome,
+    player_tm_id: str,
+    player_name: str,
+    slug: str,
+    cookies_dismissed: list,
+) -> list[dict]:
     all_rows = []
     for year in SEASON_YEARS:
         url = BASE_URL.format(slug=slug, tm_id=player_tm_id, year=year)
@@ -272,8 +293,12 @@ def extract_slug(profile_url: str) -> str:
 
 
 def load_input(path: str) -> pd.DataFrame:
-    p  = Path(path)
-    df = pd.read_excel(p, dtype=str) if p.suffix in (".xlsx", ".xls") else pd.read_csv(p, dtype=str)
+    p = Path(path)
+    df = (
+        pd.read_excel(p, dtype=str)
+        if p.suffix in (".xlsx", ".xls")
+        else pd.read_csv(p, dtype=str)
+    )
     df = df.fillna("")
     df.columns = [c.strip().lower().replace(" ", "_") for c in df.columns]
     missing = {"player_tm_id", "profile_url", "player_name"} - set(df.columns)
@@ -299,7 +324,7 @@ def append_csv(rows: list[dict], path: Path) -> None:
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 def run(input_path: str, output_path: str) -> None:
-    df  = load_input(input_path)
+    df = load_input(input_path)
     out = Path(output_path)
     out.parent.mkdir(parents=True, exist_ok=True)
 
@@ -324,8 +349,8 @@ def run(input_path: str, output_path: str) -> None:
     try:
         for i, (_, row) in enumerate(to_do.iterrows(), 1):
             tm_id = str(row["player_tm_id"]).strip()
-            name  = str(row["player_name"]).strip()
-            slug  = extract_slug(str(row["profile_url"]))
+            name = str(row["player_name"]).strip()
+            slug = extract_slug(str(row["profile_url"]))
 
             if not slug:
                 log.warning(f"[{i}/{total}] No slug for {name} — skipping.")
@@ -363,7 +388,7 @@ def run(input_path: str, output_path: str) -> None:
 # ── CLI ───────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("--input",  "-i", default="data/raw/player_bios.csv")
+    p.add_argument("--input", "-i", default="data/raw/player_bios.csv")
     p.add_argument("--output", "-o", default="data/raw/player_season_stats.csv")
     args = p.parse_args()
     run(args.input, args.output)
