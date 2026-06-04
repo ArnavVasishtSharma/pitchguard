@@ -36,10 +36,10 @@ def build_stats_url(slug: str, tm_id: str) -> str:
 
 # ── Style helpers ─────────────────────────────────────────────────────────────
 def header_style(cell, bg: str = "1F4E79") -> None:
-    cell.font      = Font(bold=True, color="FFFFFF", size=10)
-    cell.fill      = PatternFill("solid", fgColor=bg)
+    cell.font = Font(bold=True, color="FFFFFF", size=10)
+    cell.fill = PatternFill("solid", fgColor=bg)
     cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
-    cell.border    = thin_border()
+    cell.border = thin_border()
 
 
 def thin_border() -> Border:
@@ -50,13 +50,13 @@ def thin_border() -> Border:
 def data_cell(cell, value=None, alt: bool = False, url: bool = False) -> None:
     if value is not None:
         cell.value = value
-    cell.border    = thin_border()
+    cell.border = thin_border()
     cell.alignment = Alignment(vertical="center")
     if alt:
         cell.fill = PatternFill("solid", fgColor="EBF3FB")
     if url and cell.value:
         cell.hyperlink = cell.value
-        cell.font      = Font(color="0563C1", underline="single", size=9)
+        cell.font = Font(color="0563C1", underline="single", size=9)
     else:
         cell.font = Font(size=9)
 
@@ -65,7 +65,7 @@ def data_cell(cell, value=None, alt: bool = False, url: bool = False) -> None:
 def build_links_sheet(ws, players: list[dict]) -> None:
     ws.title = "TM Links"
 
-    headers    = ["No.", "Player Name", "Club", "TM ID", "Stats URL (click to open)"]
+    headers = ["No.", "Player Name", "Club", "TM ID", "Stats URL (click to open)"]
     col_widths = [6, 28, 22, 12, 70]
 
     for col, (h, w) in enumerate(zip(headers, col_widths), 1):
@@ -100,10 +100,10 @@ def build_paste_sheet(ws, players: list[dict]) -> None:
         "Player Name",
         "Club",
         "TM ID",
-        "Season",        # e.g. 24/25
-        "Competition",   # e.g. Premier League
-        "Appearances",   # e.g. 38
-        "Minutes Played",# e.g. 3420
+        "Season",  # e.g. 24/25
+        "Competition",  # e.g. Premier League
+        "Appearances",  # e.g. 38
+        "Minutes Played",  # e.g. 3420
         # Extra cols in case you want to paste more
         "Col 2",
         "Col 3",
@@ -144,8 +144,11 @@ def build_paste_sheet(ws, players: list[dict]) -> None:
         ws.row_dimensions[row_idx].height = 15
 
     # Add a helper note at the top
-    note_cell = ws.cell(row=1, column=6,
-        value="← Paste season data here. One row per player per season per competition.")
+    note_cell = ws.cell(
+        row=1,
+        column=6,
+        value="← Paste season data here. One row per player per season per competition.",
+    )
     note_cell.font = Font(italic=True, color="FFFFFF", size=9)
 
 
@@ -164,19 +167,21 @@ def run(input_path: str, output_path: str) -> None:
 
     players = []
     for i, (_, row) in enumerate(df.iterrows(), 1):
-        tm_id       = str(row.get("player_tm_id", "")).strip()
+        tm_id = str(row.get("player_tm_id", "")).strip()
         player_name = str(row.get("player_name", "")).strip()
-        club_name   = str(row.get("club_name", "")).strip()
+        club_name = str(row.get("club_name", "")).strip()
         profile_url = str(row.get("profile_url", "")).strip()
-        slug        = extract_slug(profile_url)
-        stats_url   = build_stats_url(slug, tm_id)
-        players.append({
-            "serial_no":    i,
-            "player_name":  player_name,
-            "club_name":    club_name,
-            "player_tm_id": tm_id,
-            "stats_url":    stats_url,
-        })
+        slug = extract_slug(profile_url)
+        stats_url = build_stats_url(slug, tm_id)
+        players.append(
+            {
+                "serial_no": i,
+                "player_name": player_name,
+                "club_name": club_name,
+                "player_tm_id": tm_id,
+                "stats_url": stats_url,
+            }
+        )
 
     wb = openpyxl.Workbook()
 
@@ -193,7 +198,7 @@ def run(input_path: str, output_path: str) -> None:
     wb.save(out)
     print(f"✅ Saved to {out}")
     print(f"   Sheet 1 'TM Links'   — {len(players)} clickable links")
-    print(f"   Sheet 2 'Paste Data' — ready for your manual data entry")
+    print("   Sheet 2 'Paste Data' — ready for your manual data entry")
     print()
     print("Workflow:")
     print("  1. Open Sheet 1, click a player's Stats URL")
@@ -204,7 +209,7 @@ def run(input_path: str, output_path: str) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input",  "-i", default="data/raw/player_bios.csv")
+    parser.add_argument("--input", "-i", default="data/raw/player_bios.csv")
     parser.add_argument("--output", "-o", default="data/raw/player_stats_links.xlsx")
     args = parser.parse_args()
     run(args.input, args.output)
