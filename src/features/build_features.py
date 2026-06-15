@@ -3,32 +3,14 @@ PitchGuard — Feature Engineering Pipeline v2
 =============================================
 Takes cleaned data and builds the final ML-ready dataset.
 
-Input files:
-  src/scrapers/data/processed/players_clean.csv
-  src/scrapers/data/processed/injuries_clean.csv
-  src/scrapers/data/raw/player_season_stats.csv   (partial ok)
-  src/scrapers/data/raw/stadium_surfaces.csv
-
-Key design decision:
-  We derive surface type directly from the injury CSV using:
-    - current_club  → home stadium surface (player's club at time of injury)
-    - opponent_mapped → away stadium surface (opponent's stadium)
-  No fixture list needed.
-
-Output:
-  data/processed/model_dataset.csv
-  One row per player-injury event with all features computed.
-  Also outputs data/processed/player_season_features.csv
-  One row per player-season (for players with no injuries too).
-
 Usage:
     cd C:\\Users\\Aarya\\Downloads\\Pitchguard\\pitchguard
     python src/features/build_features.py
 """
 
 import logging
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -48,7 +30,7 @@ PROC = SCRAPERS_DATA / "processed"
 OUT_DIR = Path("data/processed")
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-# ── Season label → start year ─────────────────────────────────────────────────
+# ── Constants ─────────────────────────────────────────────────────────────────
 SEASON_START_YEAR = {
     "19/20": 2019,
     "20/21": 2020,
@@ -61,7 +43,6 @@ SEASON_START_YEAR = {
 
 TARGET_SEASONS = set(SEASON_START_YEAR.keys())
 
-# ── Impact injury keywords ────────────────────────────────────────────────────
 IMPACT_KW = [
     "acl",
     "anterior cruciate",
@@ -152,19 +133,68 @@ def position_flags(position: str) -> dict:
 
 
 def season_from_date(dt: pd.Timestamp) -> str | None:
-    """Map a date to a season label like '24/25'."""
     if dt is None:
         return None
     year = dt.year
     month = dt.month
-    # Season runs Aug–Jul
-    if month >= 8:
-        start = year
-    else:
-        start = year - 1
+    start = year if month >= 8 else year - 1
     end_short = str(start + 1)[-2:]
     label = f"{str(start)[-2:]}/{end_short}"
     return label if label in TARGET_SEASONS else None
+
+
+# ── Legacy helpers required by tests ─────────────────────────────────────────
+def encode_injury_history(df: pd.DataFrame) -> dict:
+    """
+    Encodes injury history from a raw injury DataFrame.
+    Returns a dict with injury flag features.
+    Required by tests/test_features.py.
+    """
+    if df.empty:
+        return {
+            "injury_count_2y": 0,
+            "has_acl": 0,
+            "has_hamstring": 0,
+            "has_ankle": 0,
+            "has_meniscus": 0,
+        }
+
+    now = pd.Timestamp.now()
+    two_yr_ago = now - pd.Timedelta(days=730)
+
+    date_col = "from_date" if "from_date" in df.columns else "injury_date"
+    df = df.copy()
+    df["_date"] = pd.to_datetime(df[date_col], errors="coerce")
+    recent = df[df["_date"] >= two_yr_ago]
+    types = df["injury_type"].str.lower().str.cat(sep=" ") if len(df) > 0 else ""
+
+    return {
+        "injury_count_2y": len(recent),
+        "has_acl": int("acl" in types or "cruciate" in types or "anterior" in types),
+        "has_hamstring": int("hamstring" in types),
+        "has_ankle": int("ankle" in types),
+        "has_meniscus": int("meniscus" in types or "meniscal" in types),
+    }
+
+
+def compute_congestion(match_logs: pd.DataFrame, reference: pd.Timestamp) -> dict:
+    """
+    Computes match congestion metrics relative to a reference date.
+    Returns games_last_14d and minutes_last_30d.
+    Required by tests/test_features.py.
+    """
+    if match_logs.empty:
+        return {"games_last_14d": 0, "minutes_last_30d": 0}
+
+    df = match_logs.copy()
+    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    last_14 = df[df["date"] >= reference - pd.Timedelta(days=14)]
+    last_30 = df[df["date"] >= reference - pd.Timedelta(days=30)]
+
+    return {
+        "games_last_14d": len(last_14),
+        "minutes_last_30d": int(last_30["minutes_played"].sum()),
+    }
 
 
 # ── Load data ─────────────────────────────────────────────────────────────────
@@ -185,9 +215,7 @@ def load_data():
         stats.columns = [c.strip().lower().replace(" ", "_") for c in stats.columns]
         log.info(f"  Stats:    {len(stats)} rows")
     else:
-        log.warning(
-            "  player_season_stats.csv not found or empty — stats features will be null."
-        )
+        log.warning("  player_season_stats.csv not found or empty — skipping stats.")
         stats = pd.DataFrame()
 
     surfaces = pd.read_csv(RAW / "stadium_surfaces.csv", dtype=str).fillna("")
@@ -195,7 +223,6 @@ def load_data():
     surfaces["surface_type"] = (
         pd.to_numeric(surfaces["surface_type"], errors="coerce").fillna(0).astype(int)
     )
-    # Build lookup: club_name (lowercase stripped) → surface_type
     surface_map = {
         row["club_name"].strip().lower(): int(row["surface_type"])
         for _, row in surfaces.iterrows()
@@ -210,18 +237,13 @@ def build_player_features(players: pd.DataFrame) -> pd.DataFrame:
     log.info("Building player bio features...")
     df = players.copy()
     df["player_tm_id"] = df["player_tm_id"].astype(str).str.strip()
-
-    # DOB → datetime
     df["dob_parsed"] = df["dob"].apply(parse_date)
-
-    # Height
     df["height_cm"] = pd.to_numeric(df["height_cm"], errors="coerce")
     df.loc[
         df["height_cm"].notna() & ((df["height_cm"] < 155) | (df["height_cm"] > 215)),
         "height_cm",
     ] = np.nan
 
-    # Position flags
     pos_col = df["detailed_position"].where(
         df["detailed_position"] != "", df["position"]
     )
@@ -229,11 +251,9 @@ def build_player_features(players: pd.DataFrame) -> pd.DataFrame:
     pos_df = pd.DataFrame(pos_flags.tolist())
     df = pd.concat([df.reset_index(drop=True), pos_df.reset_index(drop=True)], axis=1)
 
-    # Foot
     df["strong_foot_right"] = (df["strong_foot"].str.lower() == "right").astype(int)
     df["strong_foot_left"] = (df["strong_foot"].str.lower() == "left").astype(int)
 
-    # Impute height with positional median
     for pos in ["is_goalkeeper", "is_defender", "is_midfielder", "is_forward"]:
         mask = df[pos] == 1
         median = df.loc[mask, "height_cm"].median()
@@ -259,11 +279,8 @@ def build_injury_features(
     inj["injury_date_dt"] = inj["injury_date"].apply(parse_date)
     inj["return_date_dt"] = inj["return_date"].apply(parse_date)
     inj["is_impact"] = inj["injury_type"].apply(is_impact).astype(int)
-
-    # Map season from injury date
     inj["season_mapped"] = inj["injury_date_dt"].apply(season_from_date)
 
-    # Use season column from CSV as fallback
     if "season" in inj.columns:
         inj["season_final"] = inj["season_mapped"].where(
             inj["season_mapped"].notna(), inj["season"]
@@ -271,23 +288,16 @@ def build_injury_features(
     else:
         inj["season_final"] = inj["season_mapped"]
 
-    # ── Surface at time of injury ─────────────────────────────────────────────
-    # Home surface = player's club at time of injury
-    # Opponent surface = opponent's stadium surface
-    # If no opponent info → use home surface as default
-
     def get_surface(club_name: str) -> int:
         if not isinstance(club_name, str):
             return 0
         return surface_map.get(club_name.strip().lower(), 0)
 
-    # current_club = club player was at when injured
     if "current_club" in inj.columns:
         inj["home_surface"] = inj["current_club"].apply(get_surface)
     else:
         inj["home_surface"] = 0
 
-    # opponent surface — use opponent_mapped if available, else opponent_club
     opp_col = None
     for col in ["opponent_mapped", "opponent_club", "opponent"]:
         if col in inj.columns:
@@ -299,9 +309,6 @@ def build_injury_features(
     else:
         inj["opponent_surface"] = inj["home_surface"]
 
-    # injury_surface = surface where injury likely occurred
-    # If opponent surface is known and different, use it (away match)
-    # Otherwise use home surface
     inj["injury_surface"] = inj.apply(
         lambda r: (
             r["opponent_surface"]
@@ -311,41 +318,31 @@ def build_injury_features(
         axis=1,
     )
 
-    # ── Per-player injury history features (cumulative at time of each injury) ──
     log.info("  Computing cumulative injury history per player...")
     inj_sorted = inj.sort_values(["player_tm_id", "injury_date_dt"])
-
     rows = []
+
     for tm_id, grp in inj_sorted.groupby("player_tm_id"):
         grp = grp.reset_index(drop=True)
-
         for idx, row in grp.iterrows():
             injury_dt = row["injury_date_dt"]
-
-            # All prior injuries for this player
             prior = grp.iloc[:idx]
-
-            # Injury counts
-            count_career = idx  # number of prior injuries
+            count_career = idx
             count_impact = prior["is_impact"].sum() if len(prior) > 0 else 0
 
-            # 2-year window
             if injury_dt is not None and len(prior) > 0:
                 two_yr_ago = injury_dt - pd.Timedelta(days=730)
-                prior_2yr = prior[prior["injury_date_dt"] >= two_yr_ago]
-                count_2yr = len(prior_2yr)
+                count_2yr = len(prior[prior["injury_date_dt"] >= two_yr_ago])
             else:
                 count_2yr = 0
 
-            # Days since last injury
             if len(prior) > 0 and prior["return_date_dt"].notna().any():
                 last_return = prior["return_date_dt"].dropna().iloc[-1]
                 days_since = (injury_dt - last_return).days if injury_dt else -1
                 days_since = max(0, days_since)
             else:
-                days_since = -1  # no prior injury
+                days_since = -1
 
-            # Type flags (ever had this type before)
             prior_types = (
                 prior["injury_type"].str.lower().str.cat(sep=" ")
                 if len(prior) > 0
@@ -418,7 +415,7 @@ def build_stats_features(stats: pd.DataFrame) -> pd.DataFrame:
     return agg
 
 
-# ── Build player-season features (all players, all seasons) ──────────────────
+# ── Build player-season master table ─────────────────────────────────────────
 def build_player_season_features(
     players_df: pd.DataFrame,
     injury_feats: pd.DataFrame,
@@ -427,9 +424,7 @@ def build_player_season_features(
 ) -> pd.DataFrame:
     log.info("Building player-season master table...")
 
-    # Aggregate injury features per player per season
     if not injury_feats.empty:
-        # Per player-season: max cumulative counts (last injury of that season)
         inj_agg = (
             injury_feats.groupby(["player_tm_id", "season"])
             .agg(
@@ -459,8 +454,6 @@ def build_player_season_features(
 
         for season in seasons:
             start_year = SEASON_START_YEAR[season]
-
-            # Age at season start
             dob = player.get("dob_parsed")
             if dob is not None and not (isinstance(dob, float) and np.isnan(dob)):
                 try:
@@ -490,7 +483,6 @@ def build_player_season_features(
                 "home_surface_type": home_surface,
             }
 
-            # Merge injury agg for this player-season
             if not inj_agg.empty:
                 match = inj_agg[
                     (inj_agg["player_tm_id"] == tm_id) & (inj_agg["season"] == season)
@@ -527,7 +519,6 @@ def build_player_season_features(
                         }
                     )
 
-            # Merge stats for this player-season
             if not stats_feats.empty:
                 sm = stats_feats[
                     (stats_feats["player_tm_id"] == tm_id)
@@ -552,7 +543,6 @@ def build_player_season_features(
 
     master = pd.DataFrame(rows)
 
-    # Impute missing stats with player mean then positional median
     for col in ["total_appearances", "total_minutes", "avg_minutes_per_game"]:
         master[col] = master.groupby("player_tm_id")[col].transform(
             lambda x: x.fillna(x.mean())
@@ -562,7 +552,6 @@ def build_player_season_features(
         )
         master[col] = master[col].fillna(master[col].median())
 
-    # Impute missing age with positional median
     master["age_at_season_start"] = master.groupby("is_goalkeeper")[
         "age_at_season_start"
     ].transform(lambda x: x.fillna(x.median()))
@@ -585,7 +574,6 @@ def run() -> None:
         players_df, injury_feats, stats_feats, surface_map
     )
 
-    # ── Save injury-level dataset (main model input) ──────────────────────────
     injury_out = OUT_DIR / "model_dataset.csv"
     injury_feats_with_bio = injury_feats.merge(
         players_df[
@@ -610,15 +598,12 @@ def run() -> None:
     log.info(f"   Rows    : {len(injury_feats_with_bio)}")
     log.info(f"   Columns : {len(injury_feats_with_bio.columns)}")
 
-    # ── Save player-season dataset ────────────────────────────────────────────
     season_out = OUT_DIR / "player_season_features.csv"
     master.to_csv(season_out, index=False, encoding="utf-8-sig")
     log.info(f"\n✅ Player-season features → {season_out}")
     log.info(f"   Rows    : {len(master)}")
-    log.info(f"   Columns : {len(master.columns)}")
     log.info(f"   Players : {master['player_tm_id'].nunique()}")
 
-    # ── Column null summary ───────────────────────────────────────────────────
     log.info("\n   Null counts per column (injury dataset):")
     for col in injury_feats_with_bio.columns:
         nulls = injury_feats_with_bio[col].isna().sum()
