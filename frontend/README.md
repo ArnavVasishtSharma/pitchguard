@@ -1,73 +1,90 @@
-# React + TypeScript + Vite
+# ⚡ PitchGuard — AI-Powered Football Injury Risk Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+PitchGuard is a state-of-the-art sports analytics command center and injury risk prediction interface. Designed to resemble a UEFA Champions League broadcast collided with an F1 telemetry pit-wall, it projects the probability of football players suffering impact-related injuries (e.g., ACL, Hamstring, Ankle Ligaments) based on surface friction context, match workload congestion, age, history, and recovery statistics.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🏟 Design System & Aesthetics
+PitchGuard's design prioritizes a dark, premium, stadium-themed visual system:
+* **Background Geometry:** Subtle SVG pitch line overlays (`PitchBackground`) showing the field markings behind every screen.
+* **Cinematic Tunnel Cam:** A high-end splash intro (`SplashScreen`) mimicking the dark player tunnel, floodlights, and ghostly squad silhouettes walking out onto a glowing pitch.
+* **Scoreboard LED Typography:** Scoreboard numbers and telemetry values rendered in *Share Tech Mono* font.
+* **Interactive Glass Cards:** Premium glassmorphism panels with 3D mouse perspective parallax tilt and hexagonal goal net backgrounds.
+* **Telemetry Data Visualization:** Staggered SVG radar grids, speedometers, live alerts, and vertical timelines showing historical data.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠 Tech Stack
+* **Framework:** React 19, TypeScript
+* **Build Tool:** Vite 8
+* **Styling:** Tailwind CSS v3, Vanilla CSS
+* **Animations:** Framer Motion-inspired CSS keyframes, Three.js custom shaders (`ShaderAnimation` rendering abstract pitch dynamics)
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 📂 Project Structure
+Below is a map of the newly integrated high-fidelity interface components:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+src/
+├── components/
+│   ├── ui/
+│   │   ├── BorderBeam.tsx        # Sweeping border laser lights
+│   │   ├── InjuryTimeline.tsx    # Vertical chronological injury charts
+│   │   ├── Meteors.tsx           # Glowing trailing data meteors
+│   │   ├── NumberTicker.tsx      # Count-up scoreboard ticker on mount
+│   │   ├── PitchBackground.tsx   # SVG pitch markings, goal nets, and rolling footballs
+│   │   ├── RiskRadar.tsx         # 6-axis bio-mechanical radar polygon charts
+│   │   └── GlassUI.tsx           # SVG distortion refractions & glass layout shells
+│   ├── SplashScreen.tsx          # Phase 1: Interactive cinematic intro
+│   ├── LeagueDock.tsx            # Phase 2: 3x2 glass cards with accent-borders
+│   ├── ClubPicker.tsx            # Phase 3: Snap-carousel with 3D mouse parallax
+│   ├── PitchGuard.tsx            # Phase 4: Full squad command center dashboard
+│   └── IntelFeed.tsx             # Surface mixes, circular gauges, priority alerts
+└── index.css                     # Custom animations: footballRoll, tunnelWalkIn, ledFlicker, etc.
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🚀 How to Run the Project
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Follow these steps to set up and run PitchGuard locally on your machine:
+
+### 1. Prerequisites
+Ensure you have **Node.js** (v18 or higher recommended) and **npm** installed.
+
+### 2. Installation
+Navigate to the project directory and install the necessary package dependencies:
+```bash
+npm install
 ```
+
+### 3. Run the Development Server
+Launch the local development environment using Vite:
+```bash
+npm run dev
+```
+Once the dev server starts, open your browser and navigate to the address shown in your terminal (typically **`http://localhost:5173`**).
+
+### 4. Code Quality & Linting
+Run ESLint to check the codebase for syntax or formatting issues:
+```bash
+npm run lint
+```
+
+### 5. Production Build
+To build the application for deployment:
+```bash
+npm run build
+```
+This compiles the TypeScript files and bundles static assets in the `dist` folder. To preview the production bundle locally:
+```bash
+npm run preview
+```
+
+---
+
+## 🧬 Injury Predictive Model Context
+The frontend integrates with mock predictive outputs designed to mirror a pipeline testing the hypothesis that **artificial turf increases player impact injury risk**:
+* **XGBoost Classifier:** Computes the probability (0–100) of an impact injury.
+* **SHAP Explainability:** Returns positive/negative attribution values explaining which biomechanical factors (e.g. Astro Turf exposure, recovery days, fixture density) had the highest influence on the player's risk rating.

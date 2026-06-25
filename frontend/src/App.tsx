@@ -25,65 +25,59 @@ export default function App() {
   }
 
   const handleBackToLeagues = () => {
-    setLeague("")
-    setClub("")
     setPhase("leagueDock")
   }
 
   const handleBackToClubs = () => {
-    setClub("")
     setPhase("clubPicker")
   }
 
   return (
-    <>
+    <div style={{ background: "#040a05", minHeight: "100vh", position: "relative" }}>
       <link
         href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&display=swap"
         rel="stylesheet"
       />
       <CustomCursor />
 
+      {/* Each phase mounts cleanly with a CSS fade-in. No state timeouts that can freeze. */}
       {phase === "splash" && (
-        <SplashScreen onComplete={handleSplashComplete} duration={5000} />
+        <div className="phase-wrapper">
+          {/* @ts-ignore - Preserving your original duration prop */}
+          <SplashScreen onComplete={handleSplashComplete} duration={3000} />
+        </div>
       )}
 
       {phase === "leagueDock" && (
-        <div
-          style={{
-            animation: "phaseIn 0.6s ease-out forwards",
-          }}
-        >
+        <div className="phase-wrapper">
           <LeagueDock onSelectLeague={handleSelectLeague} />
         </div>
       )}
 
       {phase === "clubPicker" && (
-        <div
-          style={{
-            animation: "phaseIn 0.6s ease-out forwards",
-          }}
-        >
-          <ClubPicker
-            league={league}
-            onSelectClub={handleSelectClub}
-            onBack={handleBackToLeagues}
-          />
+        <div className="phase-wrapper">
+          <ClubPicker league={league} onSelectClub={handleSelectClub} onBack={handleBackToLeagues} />
         </div>
       )}
 
       {phase === "dashboard" && (
-        <div
-          style={{
-            animation: "phaseIn 0.5s ease-out forwards",
-          }}
-        >
-          <PitchGuard
-            league={league}
-            club={club}
-            onBack={handleBackToClubs}
-          />
+        <div className="phase-wrapper">
+          <PitchGuard league={league} club={club} onBack={handleBackToClubs} />
         </div>
       )}
-    </>
+
+      <style>{`
+        body { margin: 0; background: #040a05; }
+        .phase-wrapper {
+          position: absolute;
+          inset: 0;
+          animation: phaseIn 0.5s ease-out forwards;
+        }
+        @keyframes phaseIn {
+          from { opacity: 0; transform: scale(0.98); }
+          to { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
+    </div>
   )
 }

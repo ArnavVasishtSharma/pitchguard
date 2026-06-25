@@ -1,4 +1,4 @@
-﻿club_name,club_tm_id,season,match_date,competition,home_away,opponent,result
+﻿club_name,club_tm_id,season,match_date,opponent,null,manager_name,time
 Arsenal,11,2019/20,Sun 11/08/19,Newcastle United,,Unai Emery,6:30 PM
 Arsenal,11,2019/20,Sat 17/08/19,Arsenal FC,,Unai Emery,5:00 PM
 Arsenal,11,2019/20,Sat 24/08/19, ,,Unai Emery,10:00 PM

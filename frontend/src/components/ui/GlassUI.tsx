@@ -197,13 +197,16 @@ export const GlassCard: React.FC<{
 
 import { cn } from "@/lib/utils";
 import { ShaderAnimation } from "./shader-lines";
+import { StadiumPitch, StadiumFloodlights } from "./PitchBackground";
 
 export const StadiumBackground: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => (
-  <div className="min-h-screen h-full font-light relative overflow-hidden w-full bg-black text-white">
+  <div className="min-h-screen h-full font-light relative overflow-hidden w-full bg-[#01160c] text-white">
     <GlassFilter />
-    <div className="absolute inset-0 z-0 pointer-events-none">
+    <StadiumPitch />
+    <StadiumFloodlights />
+    <div className="absolute inset-0 z-0 pointer-events-none opacity-40">
       <ShaderAnimation />
     </div>
     

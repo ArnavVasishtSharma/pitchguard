@@ -1,42 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* ── Core Palette ─────────────────────────────────────────────────────── */
-    --color-background: #030d1a;
-    --color-background-elevated: #071525;
-    --color-foreground: #e8f0f8;
-    --color-card: #0b1e33;
-    --color-card-foreground: #e8f0f8;
-    --color-border: #112240;
+    /* ── Core Palette ─────────────────────────────────────────────────── */
+    --color-background: #010f08;
+    --color-background-elevated: #021a0e;
+    --color-foreground: #e8f8ef;
+    --color-card: #032414;
+    --color-card-foreground: #e8f8ef;
+    --color-border: #05331c;
 
-    /* ── Accent: Neon Green & Blue ────────────────────────────────────────── */
+    /* ── Accent: Neon Green & Blue ────────────────────────────────────── */
     --color-accent: #00e87b;
     --color-accent-bright: #39ff14;
     --color-accent-dim: #00b862;
     --color-accent-glow: rgba(0, 232, 123, 0.35);
 
-    /* ── Risk Tiers ───────────────────────────────────────────────────────── */
+    /* ── Risk Tiers ───────────────────────────────────────────────────── */
     --color-risk-low: #00e87b;
     --color-risk-medium: #ff9500;
     --color-risk-high: #ff2d55;
 
-    /* ── Glassmorphism ────────────────────────────────────────────────────── */
-    --glass-bg: rgba(7, 21, 37, 0.5);
-    --glass-bg-hover: rgba(11, 30, 51, 0.6);
+    /* ── Glassmorphism ────────────────────────────────────────────────── */
+    --glass-bg: rgba(3, 24, 13, 0.5);
+    --glass-bg-hover: rgba(5, 32, 18, 0.6);
     --glass-border: rgba(0, 232, 123, 0.25);
-    --glass-border-hover: rgba(0, 232, 123, 0.4);
+    --glass-border-hover: rgba(0, 232, 123, 0.45);
     --glass-blur: 32px;
-    --glass-inner-glow: inset 2px 2px 1px 0 rgba(255, 255, 255, 0.4), inset -1px -1px 1px 1px rgba(255, 255, 255, 0.15);
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 80px rgba(0, 232, 123, 0.08);
+    --glass-inner-glow: inset 2px 2px 1px 0 rgba(255, 255, 255, 0.3), inset -1px -1px 1px 1px rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 80px rgba(0, 232, 123, 0.05);
 
-    /* ── Muted / Secondary ────────────────────────────────────────────────── */
-    --color-muted: #3a5070;
-    --color-muted-foreground: #7a9ab8;
+    /* ── Muted / Secondary ────────────────────────────────────────────── */
+    --color-muted: #4f785b;
+    --color-muted-foreground: #7aa587;
 
-    --button-ripple-color: oklch(0.145 0 0 / 0.3);
+    --button-ripple-color: oklch(0.145 0.1 140 / 0.3);
+
+    /* ── Scoreboard Font ──────────────────────────────────────────────── */
+    --font-scoreboard: 'Share Tech Mono', 'Courier New', monospace;
   }
 
   .theme {
@@ -77,7 +82,13 @@
   }
 }
 
-/* ─── Glassmorphism Animations ─────────────────────────────────────────────── */
+/* ─── Scoreboard Typography ──────────────────────────────────────────────── */
+.font-scoreboard {
+  font-family: var(--font-scoreboard);
+  letter-spacing: 0.08em;
+}
+
+/* ─── Existing Animations ─────────────────────────────────────────────────── */
 
 @keyframes moveBackground {
   0% { background-position: 0% 50%; }
@@ -86,25 +97,13 @@
 }
 
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes phaseIn {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes bounce {
@@ -112,37 +111,19 @@
   50% { transform: translateY(8px); }
 }
 
-/* ─── New Dashboard Animations ────────────────────────────────────────────── */
-
 @keyframes gaugeReveal {
-  from {
-    stroke-dashoffset: 283;
-  }
-  to {
-    stroke-dashoffset: var(--gauge-offset);
-  }
+  from { stroke-dashoffset: 283; }
+  to { stroke-dashoffset: var(--gauge-offset); }
 }
 
 @keyframes panelSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(16px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes panelSlideLeft {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes pulseGreen {
@@ -174,4 +155,151 @@
 @keyframes cornerPulse {
   0%, 100% { opacity: 0.4; }
   50% { opacity: 0.8; }
+}
+
+/* ─── NEW: Football & Stadium Animations ─────────────────────────────────── */
+
+@keyframes tunnelReveal {
+  from { opacity: 0; transform: scale(1.1); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes floodlightPulse {
+  0%, 100% { opacity: 0.04; }
+  50% { opacity: 0.07; }
+}
+
+@keyframes footballRoll {
+  0% { transform: translateX(-120px) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(calc(100vw + 120px)) rotate(720deg); opacity: 0; }
+}
+
+@keyframes footballSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pitchPulse {
+  0%, 100% { opacity: 0.05; }
+  50% { opacity: 0.09; }
+}
+
+@keyframes jerseyGlow {
+  0%, 100% { box-shadow: 0 0 6px currentColor; }
+  50% { box-shadow: 0 0 16px currentColor; }
+}
+
+@keyframes scanRow {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes meteorFall {
+  0% { transform: rotate(215deg) translateX(0); opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: rotate(215deg) translateX(-500px); opacity: 0; }
+}
+
+@keyframes numberTick {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0%); opacity: 1; }
+}
+
+@keyframes borderBeam {
+  from { offset-distance: 0%; }
+  to { offset-distance: 100%; }
+}
+
+@keyframes beamSweep {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+@keyframes letterReveal {
+  from { opacity: 0; transform: translateY(20px) rotateX(-90deg); }
+  to { opacity: 1; transform: translateY(0) rotateX(0deg); }
+}
+
+@keyframes riskBreathing {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 45, 85, 0.4), inset 3px 0 0 rgba(255, 45, 85, 0.6); }
+  50% { box-shadow: 0 0 20px 4px rgba(255, 45, 85, 0.15), inset 3px 0 0 rgba(255, 45, 85, 1); }
+}
+
+@keyframes orbitFloat {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.05); }
+  66% { transform: translate(-20px, 30px) scale(0.95); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes statCardIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes playerRowIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes radarDraw {
+  from { opacity: 0; transform: scale(0.7); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes timelineDot {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shimmerSlide {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes spotlightOscillate {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+@keyframes tunnelWalkIn {
+  0% { transform: translateX(-60px); opacity: 0; }
+  20% { opacity: 0.04; }
+  80% { opacity: 0.04; }
+  100% { transform: translateX(100vw); opacity: 0; }
+}
+
+/* ─── NEW: Cinematic Football Scoring Intro Keyframes ────────────────────── */
+
+@keyframes playerRun {
+  0% { transform: translateX(-15vw) scale(1); opacity: 0; }
+  10% { opacity: 1; }
+  85% { transform: translateX(35vw) scale(1); opacity: 1; }
+  100% { transform: translateX(38vw) scale(1); opacity: 0; }
+}
+
+@keyframes ballShoot {
+  0% { transform: translate(36vw, 0px) scale(1) rotate(0deg); opacity: 0; }
+  1% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translate(75vw, -60px) scale(0.65) rotate(720deg); opacity: 0; }
+}
+
+@keyframes netBulge {
+  0% { transform: scaleX(1) skewY(0deg); }
+  25% { transform: scaleX(1.15) skewY(2deg); filter: drop-shadow(0 0 15px rgba(0, 232, 123, 0.45)); }
+  100% { transform: scaleX(1) skewY(0deg); }
+}
+
+@keyframes goalShockwave {
+  0% { transform: translate(50%, 50%) scale(0); opacity: 0.9; filter: blur(1px); }
+  100% { transform: translate(50%, 50%) scale(4.5); opacity: 0; filter: blur(16px); }
+}
+
+@keyframes titleShockwave {
+  0% { transform: scale(0.8) translateY(15px); opacity: 0; filter: blur(8px); }
+  60% { transform: scale(1.03) translateY(-2px); opacity: 0.95; filter: blur(1px); }
+  100% { transform: scale(1) translateY(0); opacity: 1; filter: blur(0); }
 }
